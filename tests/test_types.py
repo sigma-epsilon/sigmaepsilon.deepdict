@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-from ldd import LinkedDeepDict
+from linkeddeepdict import LinkedDeepDict
 
 
 class TestDeepDict(unittest.TestCase):

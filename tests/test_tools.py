@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-from ldd.tools.kwargtools import isinkwargs, allinkwargs, anyinkwargs, \
+from linkeddeepdict.tools.kwargtools import isinkwargs, allinkwargs, anyinkwargs, \
     getfromkwargs, popfromkwargs, getallfromkwargs, getasany, countkwargs
 
 

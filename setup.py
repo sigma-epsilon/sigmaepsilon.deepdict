@@ -36,7 +36,7 @@ with open('requirements.txt') as f:
     required = f.read().splitlines()
 
 
-_init_path = "src/ldd/__init__.py"
+_init_path = "src/linkeddeepdict/__init__.py"
 _version = get_version(_init_path)
 _description = get_description(_init_path)
 _url = 'https://github.com/BALOGHBence/LinkedDeepDict'
@@ -44,7 +44,7 @@ _download_url = _url + '/archive/refs/tags/{}.zip'.format(_version)
 
 
 setup(
-	name="ldd",
+	name="linkeddeepdict",
     version=_version,                        
     author="Bence Balogh",
     author_email = 'benceeok@gmail.com',                   
