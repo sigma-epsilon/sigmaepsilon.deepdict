@@ -1,19 +1,6 @@
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dewloosh/LinkedDeepDict/main?labpath=examples%2Fbasics.ipynb?urlpath=lab)
-[![CircleCI](https://circleci.com/gh/dewloosh/LinkedDeepDict.svg?style=shield)](https://circleci.com/gh/dewloosh/LinkedDeepDict) 
-[![Documentation Status](https://readthedocs.org/projects/LinkedDeepDict/badge/?version=latest)](https://LinkedDeepDict.readthedocs.io/en/latest/?badge=latest) 
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![PyPI](https://badge.fury.io/py/LinkedDeepDict.svg)](https://pypi.org/project/LinkedDeepDict) 
+# A Quick Guide
 
-# **LinkedDeepDict**
-
-A Lightweight Python library to manage nested dictionaries with parent-child relationships.
-On top of being a compatible drop-in replcement of the build in ``dict`` class, the self replicating default factory makes the creation of complex nested layouts effortless.
-
-## **Documentation**
-
-Click [here](https://linkeddeepdict.readthedocs.io/en/latest/) to read the documentation.
-
-## **Installation**
+## Installation
 This is optional, but we suggest you to create a dedicated virtual enviroment at all times to avoid conflicts with your other projects. Create a folder, open a command shell in that folder and use the following command
 
 ```console
@@ -101,19 +88,3 @@ It is important, that the call `obj.values(deep=True)` still returns a generator
 >>> LinkedDeepDict(data).values(deep=True)
 <generator object OrderedDefaultDict.values at 0x0000028F209D54A0>    
 ```
-
-## **Testing**
-
-To run all tests, open up a console in the root directory of the project and type the following
-
-```console
->>> python -m unittest
-```
-
-## **Dependencies**
-
-The only dependency is `six`, to provide basic continuity between major Python versions 2 and 3.
-
-## **License**
-
-This package is licensed under the MIT license.
