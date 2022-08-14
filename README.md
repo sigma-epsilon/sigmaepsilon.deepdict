@@ -32,7 +32,7 @@ The library can be installed (either in a virtual enviroment or globally) from P
 >>> pip install linkeddeepdict
 ```
 
-## Dictionaries of dictionaries of diactionaries of ...
+## Usage
 
 In every case where you'd want to use a `dict`, you can use a `LinkedDeepDict` as a drop-in replacement, but on top of what a simple dictionary provides, a `LinkedDeepDict` is more capable, as it provides a machinery to handle nested layouts. It is basically an ordered `defaultdict` with a self replicating default factory. 
 
