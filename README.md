@@ -3,7 +3,7 @@
 [![Documentation Status](https://readthedocs.org/projects/LinkedDeepDict/badge/?version=latest)](https://LinkedDeepDict.readthedocs.io/en/latest/?badge=latest) 
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PyPI](https://badge.fury.io/py/LinkedDeepDict.svg)](https://pypi.org/project/LinkedDeepDict) 
-
+ 
 # **LinkedDeepDict**
 
 A Lightweight Python library to manage nested dictionaries with parent-child relationships.
@@ -14,6 +14,7 @@ On top of being a compatible drop-in replcement of the build in ``dict`` class, 
 Click [here](https://linkeddeepdict.readthedocs.io/en/latest/) to read the documentation.
 
 ## **Installation**
+
 This is optional, but we suggest you to create a dedicated virtual enviroment at all times to avoid conflicts with your other projects. Create a folder, open a command shell in that folder and use the following command
 
 ```console
@@ -32,7 +33,7 @@ The library can be installed (either in a virtual enviroment or globally) from P
 >>> pip install linkeddeepdict
 ```
 
-## Usage
+## **Usage**
 
 In every case where you'd want to use a `dict`, you can use a `LinkedDeepDict` as a drop-in replacement, but on top of what a simple dictionary provides, a `LinkedDeepDict` is more capable, as it provides a machinery to handle nested layouts. It is basically an ordered `defaultdict` with a self replicating default factory. 
 
