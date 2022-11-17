@@ -86,6 +86,10 @@ class LinkedDeepDict(dict):
             Extra keyword arguments are forwarded to the `dict` class.
 
         """
+        for k, v in kwargs.items():
+            if isinstance(v, LinkedDeepDict):
+                v.parent = self
+                v._key = k
         super().__init__(*args, **kwargs)
         self.parent = parent
         self._root = root
