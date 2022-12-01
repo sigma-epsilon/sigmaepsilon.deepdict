@@ -37,7 +37,6 @@ class TestDeepDict(unittest.TestCase):
             assert has_error
         data.unlock()
         assert not data.locked
-        data.locked = False
         has_error = False
         try:
             data['a', 'b', 'd'] = 2
