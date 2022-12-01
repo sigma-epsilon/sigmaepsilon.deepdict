@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # http://stackoverflow.com/a/6190500/562769
-from typing import Hashable, Union, Tuple
+from typing import Hashable, Union, Tuple, Any
 try:
     from collections.abc import Iterable
 except ImportError:
@@ -60,7 +60,9 @@ class LinkedDeepDict(dict):
         
     """
     
-    def __init__(self, *args, parent=None, root=None, locked=None, **kwargs):
+    def __init__(self, *args, parent:'LinkedDeepDict'=None, 
+                 root:'LinkedDeepDict'=None, locked:bool=None, 
+                 **kwargs):
         """
         Returns a `LinkedDeepDict` instance.
 
@@ -86,6 +88,10 @@ class LinkedDeepDict(dict):
             Extra keyword arguments are forwarded to the `dict` class.
 
         """
+        for k, v in kwargs.items():
+            if isinstance(v, LinkedDeepDict):
+                v.parent = self
+                v._key = k
         super().__init__(*args, **kwargs)
         self.parent = parent
         self._root = root
@@ -109,11 +115,6 @@ class LinkedDeepDict(dict):
             return self._locked if isinstance(self._locked, bool) else False
         else:
             return self._locked if isinstance(self._locked, bool) else self.parent.locked
-
-    @locked.setter
-    def locked(self, value):
-        assert isinstance(value, bool)
-        self._locked = value
 
     @property
     def depth(self) -> int:
@@ -139,21 +140,21 @@ class LinkedDeepDict(dict):
         """
         Locks the layout of the dictionary. If a `LinkedDeepDict` is locked,
         missing keys are handled the same way as they would've been handled
-        if it was a ´dict´.        
-
-        Equivalent to ``self.locked = True``.
+        if it was a ´dict´. Also, setting or deleting items in a locked
+        dictionary and not possible and you will experience an error upon trying.
+        
         """
         self._locked = True
 
     def unlock(self):
         """
         Releases the layout of the dictionary. If a `LinkedDeepDict` is not locked,
-        a missing key creates a new level in the layout.
-
-        Equivalent to ``self.locked = False``.
+        a missing key creates a new level in the layout, also setting and deleting
+        items becomes an option.
+        
         """
         self._locked = False
-
+        
     def root(self):
         """
         Returns the top-level object in a nested layout.
@@ -172,7 +173,8 @@ class LinkedDeepDict(dict):
         """
         return self.parent is None
 
-    def containers(self, *args, inclusive=False, deep=True, dtype=None, **kwargs):
+    def containers(self, *args, inclusive:bool=False, deep:bool=True, 
+                   dtype:Any=None, **kwargs):
         """
         Returns all the containers in a nested layout. A dictionary in a nested layout
         is called a container, only if it contains other containers (it is a parent). 
@@ -237,8 +239,15 @@ class LinkedDeepDict(dict):
             return self.__missing__(key)
         except KeyError:
             return self.__missing__(key)
+        
+    def __delitem__(self, key):
+        if self.locked:
+            raise RuntimeError("The object is locked!")
+        super().__delitem__(key)
 
     def __setitem__(self, key, value):
+        if self.locked:
+            raise RuntimeError("The object is locked!")
         try:
             if issequence(key):
                 if not key[0] in self:
@@ -303,7 +312,7 @@ class LinkedDeepDict(dict):
         self._root = parent.root()
         self._key = key
 
-    def items(self, *args, deep=False, return_address=False, **kwargs):
+    def items(self, *args, deep:bool=False, return_address:bool=False, **kwargs):
         if deep:
             if return_address:
                 for addr, v in dictparser(self):
@@ -315,7 +324,7 @@ class LinkedDeepDict(dict):
             for k, v in super().items():
                 yield k, v
 
-    def values(self, *args, deep=False, return_address=False, **kwargs):
+    def values(self, *args, deep:bool=False, return_address:bool=False, **kwargs):
         if deep:
             if return_address:
                 for addr, v in dictparser(self):
@@ -327,7 +336,7 @@ class LinkedDeepDict(dict):
             for v in super().values():
                 yield v
 
-    def keys(self, *args, deep=False, return_address=False, **kwargs):
+    def keys(self, *args, deep:bool=False, return_address:bool=False, **kwargs):
         if deep:
             if return_address:
                 for addr, _ in dictparser(self):
