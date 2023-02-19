@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # http://stackoverflow.com/a/6190500/562769
 from typing import Hashable, Union, Tuple, Any
 try:
