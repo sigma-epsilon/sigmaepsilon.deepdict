@@ -16,23 +16,6 @@ NoneType = type(None)
 
 
 def issequence(arg) -> bool:
-    """
-    Returns `True` if `arg` is any kind of iterable, but not a string,
-    returns `False` otherwise.
-    
-    Examples
-    --------
-    The formatter to use to print a floating point number with 4 digits:
-    
-    >>> from dewloosh.core.tools import issequence
-    >>> issequence([1, 2])
-    True
-    
-    To print the actual value as a string:
-    
-    >>> issequence('lorem ipsum')
-    False    
-    """
     return (
         isinstance(arg, Iterable)
         and not isinstance(arg, six.string_types)
@@ -293,6 +276,26 @@ class LinkedDeepDict(dict):
         else:
             self[key] = value = self.__class__()
             return value
+        
+    def __contains__(self, item: Any):
+        if not isinstance(item, Hashable) and issequence(item):
+            if len(item) == 0:
+                raise ValueError(f"{item} has zero length")
+            else:
+                obj = self
+                for subitem in item:
+                    if not isinstance(subitem, Hashable):
+                        raise TypeError(f"{subitem} is not hashable")
+                    else:
+                        if obj.__contains__(subitem):
+                            obj = obj.__getitem__(subitem)
+                        else:
+                            return False
+                return True
+        elif isinstance(item, Hashable):
+            return super().__contains__(item)
+        else:
+            raise TypeError(f"{item} is not hashable")
         
     def __reduce__(self):
         return self.__class__, tuple(), None, None, self.items()
