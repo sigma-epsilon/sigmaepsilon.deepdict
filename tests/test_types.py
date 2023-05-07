@@ -52,6 +52,12 @@ class TestDeepDict(unittest.TestCase):
         # other stuff
         data['a', 'b'].root()
         data.__repr__()
+        
+    def test_contains(self):
+        data = LinkedDeepDict()
+        data['a', 'b', 'c'] = 1
+        self.assertTrue(["a", "b", "c"] in data)
+        self.assertTrue("a" in data)
 
     def test_lib_compliance(self):
         """

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import codecs
 import os.path
 from setuptools import find_packages, setup
@@ -39,7 +38,7 @@ with open('requirements.txt') as f:
 _init_path = "src/linkeddeepdict/__init__.py"
 _version = get_version(_init_path)
 _description = get_description(_init_path)
-_url = 'https://github.com/BALOGHBence/LinkedDeepDict'
+_url = 'https://github.com/dewloosh/LinkedDeepDict'
 _download_url = _url + '/archive/refs/tags/{}.zip'.format(_version)
 
 
