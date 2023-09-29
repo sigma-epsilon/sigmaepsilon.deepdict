@@ -224,8 +224,12 @@ class DeepDict(dict):
 
     def __delitem__(self, key):
         if self.locked:
-            raise RuntimeError("The object is locked!")
-        super().__delitem__(key)
+            raise KeyError("The object is locked!")
+        if issequence(key):
+            parent = self.__getitem__(key[:-1])
+            parent.__delitem__(key[-1])
+        else:
+            super().__delitem__(key)
 
     def __setitem__(self, key, value):
         if self.locked:
