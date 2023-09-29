@@ -1,10 +1,9 @@
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dewloosh/LinkedDeepDict/main?labpath=examples%2Fbasics.ipynb?urlpath=lab)
-[![CircleCI](https://circleci.com/gh/dewloosh/LinkedDeepDict.svg?style=shield)](https://circleci.com/gh/dewloosh/LinkedDeepDict) 
-[![Documentation Status](https://readthedocs.org/projects/LinkedDeepDict/badge/?version=latest)](https://LinkedDeepDict.readthedocs.io/en/latest/?badge=latest) 
+# **SigmaEpsilon.DeepDict**
+
+[![CircleCI](https://circleci.com/gh/dewloosh/LinkedDeepDict.svg?style=shield)](https://circleci.com/gh/dewloosh/LinkedDeepDict)
+[![Documentation Status](https://readthedocs.org/projects/LinkedDeepDict/badge/?version=latest)](https://LinkedDeepDict.readthedocs.io/en/latest/?badge=latest)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![PyPI](https://badge.fury.io/py/LinkedDeepDict.svg)](https://pypi.org/project/LinkedDeepDict) 
- 
-# **LinkedDeepDict**
+[![PyPI](https://badge.fury.io/py/LinkedDeepDict.svg)](https://pypi.org/project/LinkedDeepDict)
 
 A Lightweight Python library to manage nested dictionaries with parent-child relationships.
 On top of being a compatible drop-in replcement of the build in ``dict`` class, the self replicating default factory makes the creation of complex nested layouts effortless.
@@ -35,7 +34,7 @@ The library can be installed (either in a virtual enviroment or globally) from P
 
 ## **Usage**
 
-In every case where you'd want to use a `dict`, you can use a `LinkedDeepDict` as a drop-in replacement, but on top of what a simple dictionary provides, a `LinkedDeepDict` is more capable, as it provides a machinery to handle nested layouts. It is basically an ordered `defaultdict` with a self replicating default factory. 
+In every case where you'd want to use a `dict`, you can use a `LinkedDeepDict` as a drop-in replacement, but on top of what a simple dictionary provides, a `LinkedDeepDict` is more capable, as it provides a machinery to handle nested layouts. It is basically an ordered `defaultdict` with a self replicating default factory.
 
 ```python
 >>> from linkeddeepdict import LinkedDeepDict
@@ -55,7 +54,8 @@ Notice that the object carves a way up until the last key, without needing to cr
 >>> data['a']['b']['c']['e']
 1
 ```
-To allow for a more Pythonic feel, it also supports array-like indexing, so that the following operations are valid: 
+
+To allow for a more Pythonic feel, it also supports array-like indexing, so that the following operations are valid:
 
 ```python
 >>> data['a', 'b', 'c', 'e'] = 3
@@ -77,7 +77,7 @@ The key point is that we loop over a pure `dict` instance, we get
 ```
 
 But if we use a `LinkedDeepDict` class and the option `deep=True` when accessing
-keys, values or items of dictionaries, the following happens: 
+keys, values or items of dictionaries, the following happens:
 
 ```python
 >>> [k for k in LinkedDeepDict(data).keys(deep=True)]

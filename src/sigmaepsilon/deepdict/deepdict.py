@@ -1,5 +1,6 @@
 # http://stackoverflow.com/a/6190500/562769
 from typing import Hashable, Union, Tuple, Any
+
 try:
     from collections.abc import Iterable
 except ImportError:
@@ -9,69 +10,65 @@ import six
 from .tools.dtk import dictparser, parseitems, parseaddress, parsedicts
 
 
-__all__ = ['LinkedDeepDict']
+__all__ = ["DeepDict"]
 
 
 NoneType = type(None)
 
 
 def issequence(arg) -> bool:
-    return (
-        isinstance(arg, Iterable)
-        and not isinstance(arg, six.string_types)
-    )  
+    return isinstance(arg, Iterable) and not isinstance(arg, six.string_types)
 
 
-class LinkedDeepDict(dict):
+class DeepDict(dict):
     """
-    An nested dictionary class with a self-replicating default factory. 
-    It can be a drop-in replacement for the bulit-in dictionary type, 
+    An nested dictionary class with a self-replicating default factory.
+    It can be a drop-in replacement for the bulit-in dictionary type,
     but it's more capable as it handles nested layouts.
-    
+
     Examples
     --------
     Basic usage:
-    
-    >>> from ldd import LinkedDeepDict
+
+    >>> from sigmaepsilon.deepdict import DeepDict
     >>> d = {'a' : {'aa' : {'aaa' : 0}}, 'b' : 1, 'c' : {'cc' : 2}}
-    >>> dd = LinkedDeepDict(d)
+    >>> dd = DeepDict(d)
     >>> list(dd.values(deep=True))
     [0, 1, 2]
-    
+
     See the docs for more use cases!
-        
     """
-    
-    def __init__(self, *args, parent:'LinkedDeepDict'=None, 
-                 root:'LinkedDeepDict'=None, locked:bool=None, 
-                 **kwargs):
+
+    def __init__(
+        self,
+        *args,
+        parent: "DeepDict" = None,
+        root: "DeepDict" = None,
+        locked: bool = None,
+        **kwargs,
+    ):
         """
-        Returns a `LinkedDeepDict` instance.
+        Returns a `DeepDict` instance.
 
         Parameters
         ----------
-        *args : tuple, Optional
+        *args: tuple, Optional
             Extra positional arguments are forwarded to the `dict` class.
-
-        parent : `LinkedDeepDict`, Optional
-            Parent `LinkedDeepDict` instance. Default is `None`.
-
-        root : `LinkedDeepDict`, Optional
+        parent: `DeepDict`, Optional
+            Parent `DeepDict` instance. Default is `None`.
+        root: `DeepDict`, Optional
             The top-level object. It is automatically set when creating nested
-            layouts, but may be explicitly provided. Default is `None`. 
-
-        locked : bool or NoneType, Optional
+            layouts, but may be explicitly provided. Default is `None`.
+        locke : bool or NoneType, Optional
             If the object is locked, it reacts to missing keys as a regular dictionary would.
             If it is not, a new level and a new child is created (see the examples in the docs).
-            A `None` value means that in terms of locking, the state of the object 
+            A `None` value means that in terms of locking, the state of the object
             is inherited from its parent. Default is `None`.
-
-        **kwargs : tuple, Optional
+        **kwargs: tuple, Optional
             Extra keyword arguments are forwarded to the `dict` class.
-
         """
         for k, v in kwargs.items():
-            if isinstance(v, LinkedDeepDict):
+            if isinstance(v, DeepDict):
                 v.parent = self
                 v._key = k
         super().__init__(*args, **kwargs)
@@ -79,15 +76,15 @@ class LinkedDeepDict(dict):
         self._root = root
         self._locked = locked
         self._key = None
-        
+
     @property
     def key(self) -> Union[Hashable, NoneType]:
         """
-        Returns the key of the dictionary in its parent, or `None` if the 
+        Returns the key of the dictionary in its parent, or `None` if the
         object is the root.
         """
         return self._key
-           
+
     @property
     def locked(self) -> bool:
         """
@@ -96,7 +93,9 @@ class LinkedDeepDict(dict):
         if self.parent is None:
             return self._locked if isinstance(self._locked, bool) else False
         else:
-            return self._locked if isinstance(self._locked, bool) else self.parent.locked
+            return (
+                self._locked if isinstance(self._locked, bool) else self.parent.locked
+            )
 
     @property
     def depth(self) -> int:
@@ -107,7 +106,7 @@ class LinkedDeepDict(dict):
             return 0
         else:
             return self.parent.depth + 1
-        
+
     @property
     def address(self) -> Tuple:
         """Returns the address of an item."""
@@ -120,23 +119,21 @@ class LinkedDeepDict(dict):
 
     def lock(self):
         """
-        Locks the layout of the dictionary. If a `LinkedDeepDict` is locked,
+        Locks the layout of the dictionary. If a `DeepDict` is locked,
         missing keys are handled the same way as they would've been handled
         if it was a ´dict´. Also, setting or deleting items in a locked
         dictionary and not possible and you will experience an error upon trying.
-        
         """
         self._locked = True
 
     def unlock(self):
         """
-        Releases the layout of the dictionary. If a `LinkedDeepDict` is not locked,
+        Releases the layout of the dictionary. If a `DeepDict` is not locked,
         a missing key creates a new level in the layout, also setting and deleting
         items becomes an option.
-        
         """
         self._locked = False
-        
+
     def root(self):
         """
         Returns the top-level object in a nested layout.
@@ -155,25 +152,29 @@ class LinkedDeepDict(dict):
         """
         return self.parent is None
 
-    def containers(self, *args, inclusive:bool=False, deep:bool=True, 
-                   dtype:Any=None, **kwargs):
+    def containers(
+        self,
+        *args,
+        inclusive: bool = False,
+        deep: bool = True,
+        dtype: Any = None,
+        **kwargs,
+    ):
         """
         Returns all the containers in a nested layout. A dictionary in a nested layout
-        is called a container, only if it contains other containers (it is a parent). 
+        is called a container, only if it contains other containers (it is a parent).
 
         Parameters
         ----------
-        inclusive : bool, Optional
+        inclusive: bool, Optional
             If `True`, the object the call is made upon also gets returned.
             This can be important if you make the call on the root object, which most
             of the time does not hold onto relevant data directly.
             Default is `False`.
-
-        deep : bool, Optional
+        deep: bool, Optional
             If `True` the parser goes into nested dictionaries.
             Default is `True`
-
-        dtype : Any, Optional
+        dtype: Any, Optional
             Constrains the type of the returned objects.
             Default is `None`, which means no restriction.
 
@@ -186,27 +187,26 @@ class LinkedDeepDict(dict):
         --------
         A simple example:
 
-        >>> from ldd import LinkedDeepDict
-        >>> data = LinkedDeepDict()
+        >>> from ldd import DeepDict
+        >>> data = DeepDict()
         >>> data['a', 'b', 'c'] = 1
         >>> [c.key for c in data.containers()]
         ['a', 'b']
 
-        We can see, that dictionaries 'a' and 'b' are returned as containers, but 'c' 
-        isn't,  because it is not a parent, there are no deeper levels. 
+        We can see, that dictionaries 'a' and 'b' are returned as containers, but 'c'
+        isn't,  because it is not a parent, there are no deeper levels.
 
         >>> [c.key for c in data.containers(inclusive=True, deep=True)]
         [None, 'a', 'b']
 
-        >>> [c.key for c in data.containers(inclusive=True, deep=False)]     
+        >>> [c.key for c in data.containers(inclusive=True, deep=False)]
         [None, 'a']
 
-        >>> [c.key for c in data.containers(inclusive=False, deep=True)]       
+        >>> [c.key for c in data.containers(inclusive=False, deep=True)]
         ['a', 'b']
 
-        >>> [c.key for c in data.containers(inclusive=False, deep=False)]      
+        >>> [c.key for c in data.containers(inclusive=False, deep=False)]
         ['a']
-
         """
         dtype = self.__class__ if dtype is None else dtype
         return parsedicts(self, inclusive=inclusive, dtype=dtype, deep=deep)
@@ -221,7 +221,7 @@ class LinkedDeepDict(dict):
             return self.__missing__(key)
         except KeyError:
             return self.__missing__(key)
-        
+
     def __delitem__(self, key):
         if self.locked:
             raise RuntimeError("The object is locked!")
@@ -229,7 +229,7 @@ class LinkedDeepDict(dict):
 
     def __setitem__(self, key, value):
         if self.locked:
-            raise RuntimeError("The object is locked!")
+            raise KeyError(f"Missing key {key} and the object is locked!")
         try:
             if issequence(key):
                 if not key[0] in self:
@@ -240,7 +240,7 @@ class LinkedDeepDict(dict):
                     d.__setitem__(key[1:], value)
                 else:
                     d = self[key[0]]
-                    if isinstance(d, LinkedDeepDict):
+                    if isinstance(d, DeepDict):
                         d.__leave_parent__()
                     if value is None:
                         del self[key[0]]
@@ -249,13 +249,13 @@ class LinkedDeepDict(dict):
             else:
                 if key in self:
                     d = self[key]
-                    if isinstance(d, LinkedDeepDict):
+                    if isinstance(d, DeepDict):
                         d.__leave_parent__()
                 if value is None:
                     if key in self:
                         del self[key]
                 else:
-                    if isinstance(value, LinkedDeepDict):
+                    if isinstance(value, DeepDict):
                         value.__join_parent__(self, key)
                     return super().__setitem__(key, value)
         except KeyError:
@@ -276,7 +276,7 @@ class LinkedDeepDict(dict):
         else:
             self[key] = value = self.__class__()
             return value
-        
+
     def __contains__(self, item: Any):
         if not isinstance(item, Hashable) and issequence(item):
             if len(item) == 0:
@@ -296,25 +296,25 @@ class LinkedDeepDict(dict):
             return super().__contains__(item)
         else:
             raise TypeError(f"{item} is not hashable")
-        
+
     def __reduce__(self):
         return self.__class__, tuple(), None, None, self.items()
-    
+
     def __repr__(self):
-        frmtstr = self.__class__.__name__ + '(%s)'
+        frmtstr = self.__class__.__name__ + "(%s)"
         return frmtstr % (dict.__repr__(self))
-       
+
     def __leave_parent__(self):
         self.parent = None
         self._root = None
         self._key = None
-            
+
     def __join_parent__(self, parent, key: Hashable = None):
         self.parent = parent
         self._root = parent.root()
         self._key = key
 
-    def items(self, *args, deep:bool=False, return_address:bool=False, **kwargs):
+    def items(self, *args, deep: bool = False, return_address: bool = False, **kwargs):
         if deep:
             if return_address:
                 for addr, v in dictparser(self):
@@ -326,7 +326,7 @@ class LinkedDeepDict(dict):
             for k, v in super().items():
                 yield k, v
 
-    def values(self, *args, deep:bool=False, return_address:bool=False, **kwargs):
+    def values(self, *args, deep: bool = False, return_address: bool = False, **kwargs):
         if deep:
             if return_address:
                 for addr, v in dictparser(self):
@@ -338,7 +338,7 @@ class LinkedDeepDict(dict):
             for v in super().values():
                 yield v
 
-    def keys(self, *args, deep:bool=False, return_address:bool=False, **kwargs):
+    def keys(self, *args, deep: bool = False, return_address: bool = False, **kwargs):
         if deep:
             if return_address:
                 for addr, _ in dictparser(self):
