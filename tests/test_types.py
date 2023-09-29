@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-from linkeddeepdict import LinkedDeepDict
+from sigmaepsilon.deepdict import DeepDict
 
 
 class TestDeepDict(unittest.TestCase):
 
     def test_deepdict(self):
         """
-        Qualitative test on basic usage of a LinkedDeepDict.
+        Qualitative test on basic usage of a DeepDict.
         """
-        data = LinkedDeepDict()
+        data = DeepDict()
         data['a', 'b', 'c'] = 1
         f = data.containers
         assert [c.key for c in f(inclusive=True, deep=True)] == [
@@ -54,16 +54,16 @@ class TestDeepDict(unittest.TestCase):
         data.__repr__()
         
     def test_contains(self):
-        data = LinkedDeepDict()
+        data = DeepDict()
         data['a', 'b', 'c'] = 1
         self.assertTrue(["a", "b", "c"] in data)
         self.assertTrue("a" in data)
 
     def test_lib_compliance(self):
         """
-        Tests to assure that a `LinkedDeepDict` works the same way as a `dict`.
+        Tests to assure that a `DeepDict` works the same way as a `dict`.
         """
-        data1 = LinkedDeepDict(a=1, b=dict(c=2, d=3))
+        data1 = DeepDict(a=1, b=dict(c=2, d=3))
         data2 = dict(a=1, b=dict(c=2, d=3))
         assert data1 == data2
         assert list(data1.keys()) == list(data1.keys())
