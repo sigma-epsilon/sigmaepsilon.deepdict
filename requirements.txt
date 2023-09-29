@@ -1,3 +1,5 @@
 setuptools
 wheel
 six
+
+sigmaepsilon.core>=1.1.1
