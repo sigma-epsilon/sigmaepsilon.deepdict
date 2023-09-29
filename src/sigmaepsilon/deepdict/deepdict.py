@@ -51,7 +51,7 @@ class DeepDict(dict):
         root: `DeepDict`, Optional
             The top-level object. It is automatically set when creating nested
             layouts, but may be explicitly provided. Default is `None`.
-        locke : bool or NoneType, Optional
+        locked: bool or NoneType, Optional
             If the object is locked, it reacts to missing keys as a regular dictionary would.
             If it is not, a new level and a new child is created (see the examples in the docs).
             A `None` value means that in terms of locking, the state of the object
