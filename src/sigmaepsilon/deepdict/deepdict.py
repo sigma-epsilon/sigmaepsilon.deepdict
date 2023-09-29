@@ -7,7 +7,7 @@ except ImportError:
     from collections import Iterable
 import six
 
-from .tools.dtk import dictparser, parseitems, parseaddress, parsedicts
+from .tools import dictparser, parseitems, parseaddress, parsedicts
 
 
 __all__ = ["DeepDict"]
@@ -187,7 +187,7 @@ class DeepDict(dict):
         --------
         A simple example:
 
-        >>> from ldd import DeepDict
+        >>> from sigmaepsilon.deepdict import DeepDict
         >>> data = DeepDict()
         >>> data['a', 'b', 'c'] = 1
         >>> [c.key for c in data.containers()]
