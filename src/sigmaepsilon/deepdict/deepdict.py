@@ -1,11 +1,7 @@
 # http://stackoverflow.com/a/6190500/562769
 from typing import Hashable, Union, Tuple, Any
 
-try:
-    from collections.abc import Iterable
-except ImportError:
-    from collections import Iterable
-import six
+from sigmaepsilon.core.typing import issequence
 
 from .tools import dictparser, parseitems, parseaddress, parsedicts
 
@@ -14,10 +10,6 @@ __all__ = ["DeepDict"]
 
 
 NoneType = type(None)
-
-
-def issequence(arg) -> bool:
-    return isinstance(arg, Iterable) and not isinstance(arg, six.string_types)
 
 
 class DeepDict(dict):
