@@ -3,7 +3,7 @@ import unittest
 from sigmaepsilon.deepdict import DeepDict
 
 
-class TestCustomDict(unittest.TestCase):
+class TestCompliance(unittest.TestCase):
     
     def setUp(self):
         self.custom_dict = DeepDict()
