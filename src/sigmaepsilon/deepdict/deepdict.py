@@ -1,23 +1,15 @@
 # http://stackoverflow.com/a/6190500/562769
 from typing import Hashable, Union, Tuple, Any
 
-try:
-    from collections.abc import Iterable
-except ImportError:
-    from collections import Iterable
-import six
+from sigmaepsilon.core.typing import issequence
 
-from .tools.dtk import dictparser, parseitems, parseaddress, parsedicts
+from .tools import dictparser, parseitems, parseaddress, parsedicts
 
 
 __all__ = ["DeepDict"]
 
 
 NoneType = type(None)
-
-
-def issequence(arg) -> bool:
-    return isinstance(arg, Iterable) and not isinstance(arg, six.string_types)
 
 
 class DeepDict(dict):
@@ -59,7 +51,7 @@ class DeepDict(dict):
         root: `DeepDict`, Optional
             The top-level object. It is automatically set when creating nested
             layouts, but may be explicitly provided. Default is `None`.
-        locke : bool or NoneType, Optional
+        locked: bool or NoneType, Optional
             If the object is locked, it reacts to missing keys as a regular dictionary would.
             If it is not, a new level and a new child is created (see the examples in the docs).
             A `None` value means that in terms of locking, the state of the object
@@ -187,7 +179,7 @@ class DeepDict(dict):
         --------
         A simple example:
 
-        >>> from ldd import DeepDict
+        >>> from sigmaepsilon.deepdict import DeepDict
         >>> data = DeepDict()
         >>> data['a', 'b', 'c'] = 1
         >>> [c.key for c in data.containers()]
@@ -224,8 +216,12 @@ class DeepDict(dict):
 
     def __delitem__(self, key):
         if self.locked:
-            raise RuntimeError("The object is locked!")
-        super().__delitem__(key)
+            raise KeyError("The object is locked!")
+        if issequence(key):
+            parent = self.__getitem__(key[:-1])
+            parent.__delitem__(key[-1])
+        else:
+            super().__delitem__(key)
 
     def __setitem__(self, key, value):
         if self.locked:

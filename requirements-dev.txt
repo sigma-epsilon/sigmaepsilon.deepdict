@@ -1,5 +1,2 @@
 flake8
-coverage 
-pytest 
-pytest-cov
 ipykernel

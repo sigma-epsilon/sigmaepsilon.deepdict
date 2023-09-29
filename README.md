@@ -1,16 +1,20 @@
 # **SigmaEpsilon.DeepDict**
 
-[![CircleCI](https://circleci.com/gh/dewloosh/LinkedDeepDict.svg?style=shield)](https://circleci.com/gh/dewloosh/LinkedDeepDict)
-[![Documentation Status](https://readthedocs.org/projects/LinkedDeepDict/badge/?version=latest)](https://LinkedDeepDict.readthedocs.io/en/latest/?badge=latest)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/sigma-epsilon/sigmaepsilon.deepdict/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/sigma-epsilon/sigmaepsilon.deepdict/tree/main)
+[![codecov](https://codecov.io/gh/sigma-epsilon/sigmaepsilon.deepdict/graph/badge.svg?token=7JKJ3HHSX3)](https://codecov.io/gh/sigma-epsilon/sigmaepsilon.deepdict)
+[![Documentation Status](https://readthedocs.org/projects/sigmaepsilondeepdict/badge/?version=latest)](https://sigmaepsilondeepdict.readthedocs.io/en/latest/?badge=latest)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![PyPI](https://badge.fury.io/py/LinkedDeepDict.svg)](https://pypi.org/project/LinkedDeepDict)
+[![PyPI](https://badge.fury.io/py/sigmaepsilon.deepdict.svg)](https://pypi.org/project/sigmaepsilon.deepdict)
+[![Python 3.7‒3.10](https://img.shields.io/badge/python-3.7%E2%80%923.10-blue)](https://www.python.org)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Requirements Status](https://dependency-dash.repo-helper.uk/github/sigma-epsilon/sigmaepsilon.deepdict/badge.svg)](https://dependency-dash.repo-helper.uk/github/sigma-epsilon/sigmaepsilon.deepdict)
 
 A Lightweight Python library to manage nested dictionaries with parent-child relationships.
 On top of being a compatible drop-in replcement of the build in ``dict`` class, the self replicating default factory makes the creation of complex nested layouts effortless.
 
 ## **Documentation**
 
-Click [here](https://linkeddeepdict.readthedocs.io/en/latest/) to read the documentation.
+The [documentation](https://sigmaepsilondeepdict.readthedocs.io/en/latest/) is built with [Sphinx](https://www.sphinx-doc.org/en/master/) using the [PyData Sphinx Theme](https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html) and hosted on [ReadTheDocs](https://readthedocs.org/).
 
 ## **Installation**
 
@@ -29,19 +33,19 @@ Once the enviroment is created, activate it via typing
 The library can be installed (either in a virtual enviroment or globally) from PyPI using `pip` on Python >= 3.7:
 
 ```console
->>> pip install linkeddeepdict
+>>> pip install sigmaepsilon.deepdict
 ```
 
 ## **Usage**
 
-In every case where you'd want to use a `dict`, you can use a `LinkedDeepDict` as a drop-in replacement, but on top of what a simple dictionary provides, a `LinkedDeepDict` is more capable, as it provides a machinery to handle nested layouts. It is basically an ordered `defaultdict` with a self replicating default factory.
+In every case where you'd want to use a `dict`, you can use a `DeepDict` as a drop-in replacement, but on top of what a simple dictionary provides, a `DeepDict` is more capable, as it provides a machinery to handle nested layouts. It is basically an ordered `defaultdict` with a self replicating default factory.
 
 ```python
->>> from linkeddeepdict import LinkedDeepDict
->>> data = LinkedDeepDict()
+>>> from sigmaepsilon.deepdict import DeepDict
+>>> data = DeepDict()
 ```
 
-A `LinkedDeepDict` is essentially a nested default dictionary. Being nested refers to the fact that you can do this:
+A `DeepDict` is essentially a nested default dictionary. Being nested refers to the fact that you can do this:
 
 ```python
 >>> data['a']['b']['c']['e'] = 1
@@ -76,15 +80,15 @@ The key point is that we loop over a pure `dict` instance, we get
 ['a']    
 ```
 
-But if we use a `LinkedDeepDict` class and the option `deep=True` when accessing
+But if we use a `DeepDict` class and the option `deep=True` when accessing
 keys, values or items of dictionaries, the following happens:
 
 ```python
->>> [k for k in LinkedDeepDict(data).keys(deep=True)]
+>>> [k for k in DeepDict(data).keys(deep=True)]
 ['e', 'd']    
 ```
 
-We can see, that in this case, iteration goes over keys, that actually hold on to some data, and does not return the containers themselves. If we do the same experiment with the values, it shows that the `LinkedDeepDict` only returns the leafs of the data-tree and the behaviour is fundamentally different:
+We can see, that in this case, iteration goes over keys, that actually hold on to some data, and does not return the containers themselves. If we do the same experiment with the values, it shows that the `DeepDict` only returns the leafs of the data-tree and the behaviour is fundamentally different:
 
 ```python
 >>> [k for k in data.values()]
@@ -92,14 +96,14 @@ We can see, that in this case, iteration goes over keys, that actually hold on t
 ```
 
 ```python
->>> [k for k in LinkedDeepDict(data).values(deep=True)]
+>>> [k for k in DeepDict(data).values(deep=True)]
 [3, 2]    
 ```
 
 It is important, that the call `obj.values(deep=True)` still returns a generator object, which makes it memory efficient when looping over large datasets.
 
 ```python
->>> LinkedDeepDict(data).values(deep=True)
+>>> DeepDict(data).values(deep=True)
 <generator object OrderedDefaultDict.values at 0x0000028F209D54A0>    
 ```
 
