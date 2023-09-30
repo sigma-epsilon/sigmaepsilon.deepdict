@@ -2,14 +2,36 @@
 from typing import Hashable, Union, Tuple, Any, TypeVar, Iterable, Optional, Generic
 
 from sigmaepsilon.core.typing import issequence
+from sigmaepsilon.core import Wrapper
 
-from .utils import dictparser, parseitems, parseaddress, parsedicts
+from .utils import dictparser, parseitems, parsedicts
 
 
-__all__ = ["DeepDict"]
+__all__ = ["DeepDict", "Key", "Value"]
 
 
 T = TypeVar("T", bound="DeepDict")
+
+
+class Key(Wrapper):
+    """
+    Helper class for keys.
+    """
+    
+    def __init__(self, arg: Any):
+        super().__init__(wrap=arg)
+        
+    def __hash__(self):
+        return hash(self._wrapped)
+        
+
+class Value(Wrapper):
+    """
+    Helper class for values.
+    """
+    
+    def __init__(self, arg: Any):
+        super().__init__(wrap=arg)
 
 
 class DeepDict(dict, Generic[T]):
@@ -259,8 +281,14 @@ class DeepDict(dict, Generic[T]):
 
     def __getitem__(self: T, key) -> Union[Any, T]:
         try:
-            if issequence(key):
-                return parseaddress(self, key)
+            if isinstance(key, Key):
+                return super().__getitem__(key.wrapped)
+            elif issequence(key):
+                item = self.__getitem__(key[0])
+                if len(key) > 1:
+                    return item.__getitem__(key[1:])
+                else:
+                    return item
             else:
                 return super().__getitem__(key)
         except ValueError:
@@ -269,19 +297,36 @@ class DeepDict(dict, Generic[T]):
             return self.__missing__(key)
 
     def __delitem__(self, key) -> None:
-        if self.locked:
-            raise KeyError("The object is locked!")
-        if issequence(key):
+        if isinstance(key, Key):        
+            super().__delitem__(key.wrapped)
+        elif issequence(key):
             parent = self.__getitem__(key[:-1])
             parent.__delitem__(key[-1])
         else:
             super().__delitem__(key)
 
     def __setitem__(self, key, value) -> None:
-        if self.locked:
-            raise KeyError(f"Missing key {key} and the object is locked!")
         try:
-            if issequence(key):
+            if isinstance(key, Key) or not issequence(key):
+                if key in self:
+                    d = self[key]            
+                    if isinstance(d, DeepDict):
+                        d.__leave_parent__()
+                else:
+                    d = self.__missing__(key)
+
+                if value is None:
+                    if key in self:
+                        del self[key]
+                else:
+                    if isinstance(value, DeepDict):
+                        value.__join_parent__(self, key)
+
+                    if isinstance(key, Key):
+                        return super().__setitem__(key.wrapped, value)
+                    else:
+                        return super().__setitem__(key, value)
+            else:
                 if not key[0] in self:
                     d = self.__missing__(key[0])
                 else:
@@ -293,34 +338,32 @@ class DeepDict(dict, Generic[T]):
                     d = self[key[0]]
                     if isinstance(d, DeepDict):
                         d.__leave_parent__()
+                        
                     if value is None:
                         del self[key[0]]
                     else:
                         self[key[0]] = value
-            else:
-                if key in self:
-                    d = self[key]
-                    if isinstance(d, DeepDict):
-                        d.__leave_parent__()
-
-                if value is None:
-                    if key in self:
-                        del self[key]
-                else:
-                    if isinstance(value, DeepDict):
-                        value.__join_parent__(self, key)
-
-                    return super().__setitem__(key, value)
-
+            
         except KeyError:
             return self.__missing__(key)
 
     def __missing__(self: T, key) -> T:
         if self.locked:
-            raise KeyError("Missing key : {}".format(key))
-        if issequence(key):
+            raise KeyError(f"Missing key '{key}' and the object is locked!")
+        
+        if isinstance(key, Key) or not issequence(key):
+            value = self.__class__()
+            value.__join_parent__(self, key)
+            if isinstance(key, Key):
+                super().__setitem__(key.wrapped, value)
+            else:
+                super().__setitem__(key, value)
+            return value
+        elif issequence(key):
             if key[0] not in self:
-                self[key[0]] = value = self.__class__()
+                value = self.__class__()
+                value.__join_parent__(self, key)
+                super().__setitem__(key[0], value)
             else:
                 value = self[key[0]]
 
@@ -328,12 +371,11 @@ class DeepDict(dict, Generic[T]):
                 return value.__missing__(key[1:])
             else:
                 return value
-        else:
-            self[key] = value = self.__class__()
-            return value
-
+        
     def __contains__(self, item: Any) -> bool:
-        if not isinstance(item, Hashable) and issequence(item):
+        if isinstance(item, Key):
+            return super().__contains__(item.wrapped)
+        elif issequence(item):
             if len(item) == 0:
                 raise ValueError(f"{item} has zero length")
             else:
