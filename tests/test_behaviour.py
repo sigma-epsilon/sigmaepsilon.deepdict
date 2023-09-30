@@ -13,6 +13,10 @@ class TestBehaviour(SigmaEpsilonTestCase):
         self.assertEqual(d[Key((1, 2))], "A")
         self.assertFalse((1, 2) in d)
         self.assertTrue(Key((1, 2)) in d)
+        del d[Key((1, 2))]
+        self.assertFalse(Key((1, 2)) in d)
+        d[Key((1, 2))] = "A"
+        d[Key((1, 2))] = None
         
     def test_behaviour_2(self):
         d = DeepDict()
@@ -49,6 +53,36 @@ class TestBehaviour(SigmaEpsilonTestCase):
         self.assertEqual(data['a', 'b', 'c'].parent.key, "b")
         self.assertFalse(data['a', 'b', 'c'].is_root())
         self.assertTrue(data['a', 'b', 'c'].is_leaf())
+        
+    def test_behaviour_7(self):
+        data = DeepDict(a=1, b=DeepDict(c=2))
+        data["d"] = 2
+        self.assertEqual(data["d"], 2)
+        self.assertEqual(data["b", "c"], 2)
+        self.assertEqual(data["b"].address[0], "b")
+        self.assertEqual(len(data.address), 0)
+    
+    def test_behaviour_8(self):
+        data = DeepDict(a=1)
+        def foo(): [] in data
+        self.assertFailsProperly(ValueError, foo)
+        
+    def test_behaviour_9(self):
+        data = DeepDict()
+        data['a', 'b', 'c', 'e'] = 1
+        data['a']['b']['d'] = 2
+        b = data['a', 'b']
+        b['e'] = 3
+        b['f'] = 1, 2, 3
+        
+        for _ in data.keys(deep=True, return_address=True):
+            pass
+        
+        for _ in data.values(deep=True, return_address=True):
+            pass
+        
+        for _ in data.items(deep=True, return_address=True):
+            pass
                        
         
 if __name__ == "__main__":
