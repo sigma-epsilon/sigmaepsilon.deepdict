@@ -17,19 +17,16 @@ class Key(Wrapper):
     """
     Helper class for keys.
     """
-    
+
     def __init__(self, arg: Any):
         super().__init__(wrap=arg)
-        
-    def __hash__(self):
-        return hash(self._wrapped)
-        
+
 
 class Value(Wrapper):
     """
     Helper class for values.
     """
-    
+
     def __init__(self, arg: Any):
         super().__init__(wrap=arg)
 
@@ -95,7 +92,7 @@ class DeepDict(dict, Generic[T]):
         Returns the parent of the instance, or None if it has no parent.
         """
         return self._parent
-    
+
     @property
     def key(self) -> Union[Hashable, None]:
         """
@@ -297,7 +294,7 @@ class DeepDict(dict, Generic[T]):
             return self.__missing__(key)
 
     def __delitem__(self, key) -> None:
-        if isinstance(key, Key):        
+        if isinstance(key, Key):
             super().__delitem__(key.wrapped)
         elif issequence(key):
             parent = self.__getitem__(key[:-1])
@@ -309,7 +306,7 @@ class DeepDict(dict, Generic[T]):
         try:
             if isinstance(key, Key) or not issequence(key):
                 if key in self:
-                    d = self[key]            
+                    d = self[key]
                     if isinstance(d, DeepDict):
                         d.__leave_parent__()
                 else:
@@ -338,19 +335,19 @@ class DeepDict(dict, Generic[T]):
                     d = self[key[0]]
                     if isinstance(d, DeepDict):
                         d.__leave_parent__()
-                        
+
                     if value is None:
                         del self[key[0]]
                     else:
                         self[key[0]] = value
-            
+
         except KeyError:
             return self.__missing__(key)
 
     def __missing__(self: T, key) -> T:
         if self.locked:
             raise KeyError(f"Missing key '{key}' and the object is locked!")
-        
+
         if isinstance(key, Key) or not issequence(key):
             value = self.__class__()
             value.__join_parent__(self, key)
@@ -371,7 +368,7 @@ class DeepDict(dict, Generic[T]):
                 return value.__missing__(key[1:])
             else:
                 return value
-        
+
     def __contains__(self, item: Any) -> bool:
         if isinstance(item, Key):
             return super().__contains__(item.wrapped)
