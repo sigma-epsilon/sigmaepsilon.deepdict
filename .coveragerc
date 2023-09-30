@@ -1,6 +1,5 @@
 [run]
 branch = False
-omit = */utils/*
 
 [report]
 # Regexes for lines to exclude from consideration
