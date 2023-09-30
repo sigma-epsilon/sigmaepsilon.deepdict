@@ -8,7 +8,7 @@ from sigmaepsilon.deepdict import DeepDict
 
 class TestPickle(SigmaEpsilonTestCase):
         
-    def test_behaviour_9(self):
+    def test_pickle(self):
         data = DeepDict()
         data['a', 'b', 'c', 'e'] = 1
         data['a']['b']['d'] = 2
