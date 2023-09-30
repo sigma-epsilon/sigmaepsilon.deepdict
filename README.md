@@ -112,7 +112,7 @@ It is important, that the call `obj.values(deep=True)` still returns a generator
 To run all tests, open up a console in the root directory of the project and type the following
 
 ```console
->>> python -m unittest
+>>> pytest
 ```
 
 ## **Dependencies**
