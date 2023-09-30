@@ -59,7 +59,7 @@ class DeepDict(dict, Generic[T]):
         """
         for k, v in kwargs.items():
             if isinstance(v, DeepDict):
-                v.parent = self
+                v._parent = self
                 v._key = k
         super().__init__(*args, **kwargs)
         self._parent = parent
