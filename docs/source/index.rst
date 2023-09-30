@@ -10,8 +10,7 @@ Welcome to SigmaEpsilon.DeepDict's documentation!
 `Source Repository <https://github.com/sigma-epsilon/sigmaepsilon.deepdict>`_
 
 This is a lightweight Python library to manage nested dictionaries with 
-parent-child relationships. On top of being a compatible drop-in replcement 
-of the build in ``dict`` class, the self replicating default factory makes the 
+parent-child relationships. The self replicating default factory makes the 
 creation of complex nested layouts effortless using the :ref:`DeepDict` class. 
 The library also provides a collection of useful algoritms for parsing of nested dictionaries. 
 This architecture of data is utilized in many ``SigmaEpsilon`` projects.
@@ -113,10 +112,6 @@ In fact, you can assign values as deep as you want:
 
    >>> data = DeepDict()
    >>> data["a", 0, "b", 1, (5, 6)] = 10
-
-.. important::
-   Besides these tricks, a DeepDict works identically to a standard dictionary in all circumstances,
-   you only have extra options.
 
 Projects using :ref:`DeepDict`
 ==============================
