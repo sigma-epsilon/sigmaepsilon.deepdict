@@ -83,6 +83,15 @@ class TestBehaviour(SigmaEpsilonTestCase):
         
         for _ in data.items(deep=True, return_address=True):
             pass
+        
+        for _ in data.keys(deep=True, return_address=False):
+            pass
+        
+        for _ in data.values(deep=True, return_address=False):
+            pass
+        
+        for _ in data.items(deep=True, return_address=False):
+            pass
                        
         
 if __name__ == "__main__":
