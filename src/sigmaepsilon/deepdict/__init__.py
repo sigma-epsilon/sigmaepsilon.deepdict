@@ -3,11 +3,13 @@ from importlib.metadata import metadata
 
 from sigmaepsilon.core.config import namespace_package_name
 
-from .deepdict import DeepDict
+from .deepdict import DeepDict, Key, Value
 from .utils import dictparser, parseaddress, parsedicts, parseitems, parsedicts_addr
 
 __all__ = [
     "DeepDict",
+    "Key",
+    "Value",
     "dictparser",
     "parseaddress",
     "parseitems",
