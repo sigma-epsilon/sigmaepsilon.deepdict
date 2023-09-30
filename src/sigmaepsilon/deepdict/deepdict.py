@@ -1,19 +1,18 @@
 # http://stackoverflow.com/a/6190500/562769
-from typing import Hashable, Union, Tuple, Any, TypeVar
+from typing import Hashable, Union, Tuple, Any, TypeVar, Iterable, Optional, Generic
 
 from sigmaepsilon.core.typing import issequence
 
-from .tools import dictparser, parseitems, parseaddress, parsedicts
+from .utils import dictparser, parseitems, parseaddress, parsedicts
 
 
 __all__ = ["DeepDict"]
 
 
-NoneType = type(None)
 T = TypeVar("T", bound="DeepDict")
 
 
-class DeepDict(dict):
+class DeepDict(dict, Generic[T]):
     """
     An nested dictionary class with a self-replicating default factory.
     It can be a drop-in replacement for the bulit-in dictionary type,
@@ -28,15 +27,13 @@ class DeepDict(dict):
     >>> dd = DeepDict(d)
     >>> list(dd.values(deep=True))
     [0, 1, 2]
-
-    See the docs for more use cases!
     """
 
     def __init__(
         self,
         *args,
-        parent: "DeepDict" = None,
-        root: "DeepDict" = None,
+        parent: T = None,
+        root: T = None,
         locked: bool = None,
         **kwargs,
     ):
@@ -65,16 +62,22 @@ class DeepDict(dict):
                 v.parent = self
                 v._key = k
         super().__init__(*args, **kwargs)
-        self.parent = parent
+        self._parent = parent
         self._root = root
         self._locked = locked
         self._key = None
 
     @property
-    def key(self) -> Union[Hashable, NoneType]:
+    def parent(self: T) -> Union[T, None, "DeepDict"]:
         """
-        Returns the key of the dictionary in its parent, or `None` if the
-        object is the root.
+        Returns the parent of the instance, or None if it has no parent.
+        """
+        return self._parent
+    
+    @property
+    def key(self) -> Union[Hashable, None]:
+        """
+        Returns the key of the instance, or `None` if it has no parent.
         """
         return self._key
 
@@ -101,31 +104,31 @@ class DeepDict(dict):
             return self.parent.depth + 1
 
     @property
-    def address(self) -> Tuple:
-        """Returns the address of an item."""
+    def address(self) -> Union[Tuple, None]:
+        """Returns the address of an item or `None` it has no parent."""
         if self.is_root():
             return []
         else:
             r = self.parent.address
             r.append(self.key)
             return r
-    
+
     @classmethod
-    def wrap(cls: T, d:dict) -> T:
+    def wrap(cls: T, d: dict) -> Union[T, "DeepDict"]:
         """
         Wraps a dictionary with all nested dictionaries and content.
-        
+
         Example
         -------
         >>> from sigmaepsilon.deepdict import DeepDict
         >>> d = {
-        >>>     "a" : {"aa" : 1},
-        >>>     "b" : 2,
-        >>>     "c" : {"cc" : {"ccc" : 3}}, 
-        >>> }
+        ...     "a" : {"aa" : 1},
+        ...     "b" : 2,
+        ...     "c" : {"cc" : {"ccc" : 3}},
+        ... }
         >>> DeepDict.wrap(d)["c", "cc", "ccc"]
         3
-        
+
         >>> list(DeepDict.wrap(d).items(deep=True))
         [('aa', 1), ('b', 2), ('ccc', 3)]
         """
@@ -134,7 +137,7 @@ class DeepDict(dict):
             result[subaddress] = value
         return result
 
-    def lock(self):
+    def lock(self) -> None:
         """
         Locks the layout of the dictionary. If a `DeepDict` is locked,
         missing keys are handled the same way as they would've been handled
@@ -143,7 +146,7 @@ class DeepDict(dict):
         """
         self._locked = True
 
-    def unlock(self):
+    def unlock(self) -> None:
         """
         Releases the layout of the dictionary. If a `DeepDict` is not locked,
         a missing key creates a new level in the layout, also setting and deleting
@@ -151,7 +154,7 @@ class DeepDict(dict):
         """
         self._locked = False
 
-    def root(self):
+    def root(self: T) -> T:
         """
         Returns the top-level object in a nested layout.
         """
@@ -165,18 +168,44 @@ class DeepDict(dict):
 
     def is_root(self) -> bool:
         """
-        Returns `True`, if the object is the root.
+        Returns `True`, if the instance is the root.
         """
         return self.parent is None
 
+    def is_leaf(self: T, dtype: Optional[Any] = None) -> bool:
+        """
+        Returns `True`, if the instance has no children.
+
+        Parameters
+        ----------
+        dtype: Any, Optional
+            It can be a type that controls what is considered as a children.
+            It is None by default, which means that only instances of the same
+            class are considered children. In this case, a simple `dict` wouldn't
+            make it.
+
+        Example
+        -------
+        >>> from sigmaepsilon.deepdict import DeepDict
+        >>> d = {
+        ...     "a" : {"aa" : 1},
+        ...     "b" : 2,
+        ...     "c" : {"cc" : {"ccc" : 3}},
+        ... }
+        >>> dd = DeepDict.wrap(d)
+        >>> dd.is_leaf(), dd["a"].is_leaf()
+        (False, True)
+        """
+        dtype = self.__class__ if dtype is None else dtype
+        return not any(list([isinstance(v, dtype) for v in self.values()]))
+
     def containers(
-        self,
-        *args,
-        inclusive: bool = False,
-        deep: bool = True,
-        dtype: Any = None,
-        **kwargs,
-    ):
+        self: T,
+        *,
+        inclusive: Optional[bool] = False,
+        deep: Optional[bool] = True,
+        dtype: Optional[Any] = None,
+    ) -> Iterable[T]:
         """
         Returns all the containers in a nested layout. A dictionary in a nested layout
         is called a container, only if it contains other containers (it is a parent).
@@ -228,7 +257,7 @@ class DeepDict(dict):
         dtype = self.__class__ if dtype is None else dtype
         return parsedicts(self, inclusive=inclusive, dtype=dtype, deep=deep)
 
-    def __getitem__(self, key):
+    def __getitem__(self: T, key) -> Union[Any, T]:
         try:
             if issequence(key):
                 return parseaddress(self, key)
@@ -239,7 +268,7 @@ class DeepDict(dict):
         except KeyError:
             return self.__missing__(key)
 
-    def __delitem__(self, key):
+    def __delitem__(self, key) -> None:
         if self.locked:
             raise KeyError("The object is locked!")
         if issequence(key):
@@ -248,7 +277,7 @@ class DeepDict(dict):
         else:
             super().__delitem__(key)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key, value) -> None:
         if self.locked:
             raise KeyError(f"Missing key {key} and the object is locked!")
         try:
@@ -257,6 +286,7 @@ class DeepDict(dict):
                     d = self.__missing__(key[0])
                 else:
                     d = self[key[0]]
+
                 if len(key) > 1:
                     d.__setitem__(key[1:], value)
                 else:
@@ -272,17 +302,20 @@ class DeepDict(dict):
                     d = self[key]
                     if isinstance(d, DeepDict):
                         d.__leave_parent__()
+
                 if value is None:
                     if key in self:
                         del self[key]
                 else:
                     if isinstance(value, DeepDict):
                         value.__join_parent__(self, key)
+
                     return super().__setitem__(key, value)
+
         except KeyError:
             return self.__missing__(key)
 
-    def __missing__(self, key):
+    def __missing__(self: T, key) -> T:
         if self.locked:
             raise KeyError("Missing key : {}".format(key))
         if issequence(key):
@@ -290,6 +323,7 @@ class DeepDict(dict):
                 self[key[0]] = value = self.__class__()
             else:
                 value = self[key[0]]
+
             if len(key) > 1:
                 return value.__missing__(key[1:])
             else:
@@ -298,7 +332,7 @@ class DeepDict(dict):
             self[key] = value = self.__class__()
             return value
 
-    def __contains__(self, item: Any):
+    def __contains__(self, item: Any) -> bool:
         if not isinstance(item, Hashable) and issequence(item):
             if len(item) == 0:
                 raise ValueError(f"{item} has zero length")
@@ -318,24 +352,41 @@ class DeepDict(dict):
         else:
             raise TypeError(f"{item} is not hashable")
 
-    def __reduce__(self):
+    def __reduce__(self) -> Any:
         return self.__class__, tuple(), None, None, self.items()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         frmtstr = self.__class__.__name__ + "(%s)"
         return frmtstr % (dict.__repr__(self))
 
-    def __leave_parent__(self):
-        self.parent = None
+    def __leave_parent__(self) -> None:
+        self._parent = None
         self._root = None
         self._key = None
 
-    def __join_parent__(self, parent, key: Hashable = None):
-        self.parent = parent
+    def __join_parent__(self: T, parent: T, key: Optional[Hashable] = None) -> None:
+        self._parent = parent
         self._root = parent.root()
         self._key = key
 
-    def items(self, *args, deep: bool = False, return_address: bool = False, **kwargs):
+    def items(
+        self: T, *, deep: Optional[bool] = False, return_address: Optional[bool] = False
+    ) -> Iterable[Tuple]:
+        """
+        Returns the items. When called without arguments, it works the same as for
+        standard dictionaries.
+
+        Parameters
+        ----------
+        deep: bool, Optional
+            If `True` the parser goes into nested dictionaries.
+            Default is `True`.
+        return_address: bool, Optional
+            If `True`, addresses are returned instead of keys. The difference is similar
+            than that of absolute and repative paths. In this respect, keys are the relative
+            paths (relative to the parent), and addresses are absolute paths (relative to the root).
+            Default is False.
+        """
         if deep:
             if return_address:
                 for addr, v in dictparser(self):
@@ -347,7 +398,22 @@ class DeepDict(dict):
             for k, v in super().items():
                 yield k, v
 
-    def values(self, *args, deep: bool = False, return_address: bool = False, **kwargs):
+    def values(
+        self: T, *, deep: Optional[bool] = False, return_address: Optional[bool] = False
+    ) -> Iterable[Union[Any, T]]:
+        """
+        Returns the values. When called without arguments, it works the same as for
+        standard dictionaries.
+
+        Parameters
+        ----------
+        deep: bool, Optional
+            If `True` the parser goes into nested dictionaries.
+            Default is `True`.
+        return_address: bool, Optional
+            If `True`, addresses are returned as well.
+            Default is False.
+        """
         if deep:
             if return_address:
                 for addr, v in dictparser(self):
@@ -359,7 +425,24 @@ class DeepDict(dict):
             for v in super().values():
                 yield v
 
-    def keys(self, *args, deep: bool = False, return_address: bool = False, **kwargs):
+    def keys(
+        self: T, *, deep: Optional[bool] = False, return_address: Optional[bool] = False
+    ) -> Iterable[Hashable]:
+        """
+        Returns the keys. When called without arguments, it works the same as for
+        standard dictionaries.
+
+        Parameters
+        ----------
+        deep: bool, Optional
+            If `True` the parser goes into nested dictionaries.
+            Default is `True`.
+        return_address: bool, Optional
+            If `True`, addresses are returned instead of keys. The difference is similar
+            than that of absolute and repative paths. In this respect, keys are the relative
+            paths (relative to the parent), and addresses are absolute paths (relative to the root).
+            Default is False.
+        """
         if deep:
             if return_address:
                 for addr, _ in dictparser(self):
