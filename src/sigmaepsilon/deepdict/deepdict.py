@@ -1,5 +1,5 @@
 # http://stackoverflow.com/a/6190500/562769
-from typing import Hashable, Union, Tuple, Any
+from typing import Hashable, Union, Tuple, Any, TypeVar
 
 from sigmaepsilon.core.typing import issequence
 
@@ -10,6 +10,7 @@ __all__ = ["DeepDict"]
 
 
 NoneType = type(None)
+T = TypeVar("T", bound="DeepDict")
 
 
 class DeepDict(dict):
@@ -108,6 +109,30 @@ class DeepDict(dict):
             r = self.parent.address
             r.append(self.key)
             return r
+    
+    @classmethod
+    def wrap(cls: T, d:dict) -> T:
+        """
+        Wraps a dictionary with all nested dictionaries and content.
+        
+        Example
+        -------
+        >>> from sigmaepsilon.deepdict import DeepDict
+        >>> d = {
+        >>>     "a" : {"aa" : 1},
+        >>>     "b" : 2,
+        >>>     "c" : {"cc" : {"ccc" : 3}}, 
+        >>> }
+        >>> DeepDict.wrap(d)["c", "cc", "ccc"]
+        3
+        
+        >>> list(DeepDict.wrap(d).items(deep=True))
+        [('aa', 1), ('b', 2), ('ccc', 3)]
+        """
+        result = cls()
+        for subaddress, value in dictparser(d):
+            result[subaddress] = value
+        return result
 
     def lock(self):
         """
