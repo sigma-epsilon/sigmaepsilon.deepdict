@@ -1,3 +1,4 @@
+sphinx
 ipython
 myst_parser
 nbsphinx
