@@ -1,9 +1,16 @@
 # -*- coding: utf-8 -*-
-from typing import Iterable, Tuple, Any, List, Hashable
+from typing import Iterable, Tuple, Any, List, Hashable, Optional, Union, TypeVar, Callable
 from copy import copy
 
+try:
+    import asciitree
+except ImportError:
+    ascitree = None
 
 __all__ = ["dictparser", "parseaddress", "parseitems", "parsedicts", "parsedicts_addr"]
+
+
+DictLike = TypeVar("DictLike")
 
 
 def dictparser(d: dict, *, dtype=dict, **_kw) -> Iterable[Tuple[List[Hashable], Any]]:
@@ -182,3 +189,93 @@ def parsedicts_addr(
                     value, inclusive=False, dtype=dtype, _addr=addr
                 ):
                     yield subaddr, subval
+
+
+def _asciitree(data: dict, dtype: type = dict, **_kw) -> dict:
+    tree = _kw.get("_tree", {})
+    name = getattr(data, "name", data.__class__.__name__)
+    name = data.__class__.__name__ if name is None else name
+    tree[name] = {}
+    for value in data.values():
+        if isinstance(value, dtype):
+            _asciitree(value, dtype=dtype, _tree=tree[name])
+    return tree
+
+
+def _wrap(data: dict, wrapper: DictLike, tr:Optional[Union[Callable, None]]=None, **_kw) -> DictLike:
+    result = _kw.get("_result", None)
+    if result is None:
+        result = wrapper()
+        
+    if tr is None:
+        tr = lambda x: x
+        
+    for key, value in data.items():
+        if isinstance(value, dict):
+            result[key] = wrapper()
+            _wrap(value, wrapper, tr=tr, _result=result[key])
+        else:
+            result[key] = tr(value)
+            
+    return result
+
+
+if asciitree is None:  # pragma: no cover
+
+    def asciiprint(*_, **__) -> str:
+        raise ImportError("This requires the 'asciitree' package.")
+
+
+else:
+
+    def asciiprint(
+        data: dict,
+        *,
+        dtype: Optional[Union[type, None]] = None,
+        tr: Optional[Union[asciitree.KeyArgsConstructor, None]] = None,
+    ) -> None:
+        """
+        Prints a dictionary as a tree using the ASCII character set.
+
+        Parameters
+        ----------
+        data: dict, Optional
+            A dictionary.
+        dtype: type, Optional
+            If a valid type is provided (a subclass of `dict`), then the tree
+            will only include containers of that class. Default is None, in which case
+            only containers with the same type as 'data' are included in the output.
+        tr: asciitree.KeyArgsConstructor, Optional
+            A formatter to use. Default is None, in which case a `asciitree.LeftAligned`
+            instance is created at runtime.
+
+        Notes
+        -----
+        This requires the `asciitree` package to be installed.
+
+        Example
+        -------
+        >>> from sigmaepsilon.deepdict import DeepDict, asciiprint
+        >>> d = {
+        ...     "a" : {"aa" : 1},
+        ...     "b" : 2,
+        ...     "c" : {"cc" : {"ccc" : 3}},
+        ... }
+        >>> data = DeepDict.wrap(d)
+        >>> asciiprint(data)
+        DeepDict
+         +-- a
+         +-- c
+             +-- cc
+        """
+        dtype = data.__class__ if dtype is None else dtype
+        
+        if not isinstance(data, dict):
+            raise TypeError("Type of 'data' must be a subclass of 'dict'")
+        
+        if not issubclass(dtype, dict):
+            raise TypeError("'dtype' must be a subclass of 'dict'")
+
+        tr = asciitree.LeftAligned() if tr is None else tr
+
+        print(tr(_asciitree(data)))

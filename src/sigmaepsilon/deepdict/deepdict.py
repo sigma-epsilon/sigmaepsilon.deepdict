@@ -1,10 +1,11 @@
 # http://stackoverflow.com/a/6190500/562769
 from typing import Hashable, Union, Tuple, Any, TypeVar, Iterable, Optional, Generic
+from copy import copy as shallow_copy, deepcopy as deep_copy
 
 from sigmaepsilon.core.typing import issequence
 from sigmaepsilon.core import Wrapper
 
-from .utils import dictparser, parseitems, parsedicts
+from .utils import dictparser, parseitems, parsedicts, _wrap
 
 
 __all__ = ["DeepDict", "Key", "Value"]
@@ -37,6 +38,13 @@ class DeepDict(dict, Generic[T]):
     It can be a drop-in replacement for the bulit-in dictionary type,
     but it's more capable as it handles nested layouts.
 
+    Parameters
+    ----------
+    *args*: tuple, Optional
+        Extra positional arguments are forwarded to the `dict` class.
+    **kwargs**: dictionary, Optional
+        Extra keyword arguments are forwarded to the `dict` class.
+
     Examples
     --------
     Basic usage:
@@ -48,43 +56,17 @@ class DeepDict(dict, Generic[T]):
     [0, 1, 2]
     """
 
-    def __init__(
-        self,
-        *args,
-        parent: T = None,
-        root: T = None,
-        locked: bool = None,
-        **kwargs,
-    ):
-        """
-        Returns a `DeepDict` instance.
-
-        Parameters
-        ----------
-        *args: tuple, Optional
-            Extra positional arguments are forwarded to the `dict` class.
-        parent: `DeepDict`, Optional
-            Parent `DeepDict` instance. Default is `None`.
-        root: `DeepDict`, Optional
-            The top-level object. It is automatically set when creating nested
-            layouts, but may be explicitly provided. Default is `None`.
-        locked: bool or NoneType, Optional
-            If the object is locked, it reacts to missing keys as a regular dictionary would.
-            If it is not, a new level and a new child is created (see the examples in the docs).
-            A `None` value means that in terms of locking, the state of the object
-            is inherited from its parent. Default is `None`.
-        **kwargs: tuple, Optional
-            Extra keyword arguments are forwarded to the `dict` class.
-        """
+    def __init__(self, *args, **kwargs):
         for k, v in kwargs.items():
             if isinstance(v, DeepDict):
                 v._parent = self
                 v._key = k
         super().__init__(*args, **kwargs)
-        self._parent = parent
-        self._root = root
-        self._locked = locked
+        self._parent = None
+        self._root = None
+        self._locked = None
         self._key = None
+        self._name = None
 
     @property
     def parent(self: T) -> Union[T, None, "DeepDict"]:
@@ -92,6 +74,37 @@ class DeepDict(dict, Generic[T]):
         Returns the parent of the instance, or None if it has no parent.
         """
         return self._parent
+
+    @property
+    def root(self: T) -> Union[T, None, "DeepDict"]:
+        """
+        Returns the top-level object in a nested layout.
+        """
+        if self.parent is None:
+            return self
+        else:
+            if self._root is not None:
+                return self._root
+            else:
+                return self.parent.root
+
+    @property
+    def name(self) -> Union[str, None]:
+        """
+        The name of the dictionary. It is used for representation purposes.
+        If a name is not specified, the `key` is returned here. Setting a name
+        may be important for the top level entity, since it has no key.
+        """
+        if self._name is None:
+            return self._key
+        else:
+            return self._name
+
+    @name.setter
+    def name(self, value: str) -> None:
+        if not isinstance(value, str):
+            raise TypeError(f"Name must be a string, it is {type(value)}")
+        self._name = value
 
     @property
     def key(self) -> Union[Hashable, None]:
@@ -133,9 +146,20 @@ class DeepDict(dict, Generic[T]):
             return r
 
     @classmethod
-    def wrap(cls: T, d: dict) -> Union[T, "DeepDict"]:
+    def wrap(
+        cls: T, d: dict, copy: bool = False, deepcopy: bool = False
+    ) -> Union[T, "DeepDict"]:
         """
         Wraps a dictionary with all nested dictionaries and content.
+
+        Parameters
+        ----------
+        d: dict
+            The dictionary to wrap.
+        copy: bool, Optional
+            If `True`, shallow copies of the values are stored. Default is False.
+        deepcopy: bool, Optional
+            If `True`, deep copies of the values are stored. Default is False.
 
         Example
         -------
@@ -151,10 +175,18 @@ class DeepDict(dict, Generic[T]):
         >>> list(DeepDict.wrap(d).items(deep=True))
         [('aa', 1), ('b', 2), ('ccc', 3)]
         """
-        result = cls()
-        for subaddress, value in dictparser(d):
-            result[subaddress] = value
-        return result
+        if copy and deepcopy:
+            raise ValueError("Only one of 'copy' and 'deepcopy' can be True.")
+
+        tr = None
+
+        if copy:
+            tr = shallow_copy
+
+        if deepcopy:
+            tr = deep_copy
+
+        return _wrap(d, cls, tr=tr)
 
     def lock(self) -> None:
         """
@@ -172,18 +204,6 @@ class DeepDict(dict, Generic[T]):
         items becomes an option.
         """
         self._locked = False
-
-    def root(self: T) -> T:
-        """
-        Returns the top-level object in a nested layout.
-        """
-        if self.parent is None:
-            return self
-        else:
-            if self._root is not None:
-                return self._root
-            else:
-                return self.parent.root()
 
     def is_root(self) -> bool:
         """
@@ -405,7 +425,7 @@ class DeepDict(dict, Generic[T]):
 
     def __join_parent__(self: T, parent: T, key: Optional[Hashable] = None) -> None:
         self._parent = parent
-        self._root = parent.root()
+        self._root = parent.root
         self._key = key
 
     def items(
