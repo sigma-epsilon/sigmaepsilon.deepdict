@@ -23,7 +23,7 @@ class TestDeepDict(unittest.TestCase):
         assert data.is_root() is True
         assert data['a', 'b'].is_root() is False
         assert data['a', 'b'].parent == data['a']
-        assert data['a', 'b'].root() == data
+        assert data['a', 'b'].root == data
 
         # lock test
         has_error = False
@@ -50,7 +50,7 @@ class TestDeepDict(unittest.TestCase):
         assert data['a', 'b', 'e'] == 3
         
         # other stuff
-        data['a', 'b'].root()
+        data['a', 'b'].root
         data.__repr__()
         
     def test_contains(self):

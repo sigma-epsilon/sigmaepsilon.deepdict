@@ -37,6 +37,13 @@ class DeepDict(dict, Generic[T]):
     It can be a drop-in replacement for the bulit-in dictionary type,
     but it's more capable as it handles nested layouts.
 
+    Parameters
+    ----------
+    *args*: tuple, Optional
+        Extra positional arguments are forwarded to the `dict` class.
+    **kwargs**: dictionary, Optional
+        Extra keyword arguments are forwarded to the `dict` class.
+    
     Examples
     --------
     Basic usage:
@@ -48,42 +55,15 @@ class DeepDict(dict, Generic[T]):
     [0, 1, 2]
     """
 
-    def __init__(
-        self,
-        *args,
-        parent: T = None,
-        root: T = None,
-        locked: bool = None,
-        **kwargs,
-    ):
-        """
-        Returns a `DeepDict` instance.
-
-        Parameters
-        ----------
-        *args: tuple, Optional
-            Extra positional arguments are forwarded to the `dict` class.
-        parent: `DeepDict`, Optional
-            Parent `DeepDict` instance. Default is `None`.
-        root: `DeepDict`, Optional
-            The top-level object. It is automatically set when creating nested
-            layouts, but may be explicitly provided. Default is `None`.
-        locked: bool or NoneType, Optional
-            If the object is locked, it reacts to missing keys as a regular dictionary would.
-            If it is not, a new level and a new child is created (see the examples in the docs).
-            A `None` value means that in terms of locking, the state of the object
-            is inherited from its parent. Default is `None`.
-        **kwargs: tuple, Optional
-            Extra keyword arguments are forwarded to the `dict` class.
-        """
+    def __init__(self, *args, **kwargs):
         for k, v in kwargs.items():
             if isinstance(v, DeepDict):
                 v._parent = self
                 v._key = k
         super().__init__(*args, **kwargs)
-        self._parent = parent
-        self._root = root
-        self._locked = locked
+        self._parent = None
+        self._root = None
+        self._locked = None
         self._key = None
 
     @property
@@ -92,6 +72,19 @@ class DeepDict(dict, Generic[T]):
         Returns the parent of the instance, or None if it has no parent.
         """
         return self._parent
+    
+    @property
+    def root(self: T) -> Union[T, None, "DeepDict"]:
+        """
+        Returns the top-level object in a nested layout.
+        """
+        if self.parent is None:
+            return self
+        else:
+            if self._root is not None:
+                return self._root
+            else:
+                return self.parent.root
 
     @property
     def key(self) -> Union[Hashable, None]:
@@ -172,18 +165,6 @@ class DeepDict(dict, Generic[T]):
         items becomes an option.
         """
         self._locked = False
-
-    def root(self: T) -> T:
-        """
-        Returns the top-level object in a nested layout.
-        """
-        if self.parent is None:
-            return self
-        else:
-            if self._root is not None:
-                return self._root
-            else:
-                return self.parent.root()
 
     def is_root(self) -> bool:
         """
@@ -405,7 +386,7 @@ class DeepDict(dict, Generic[T]):
 
     def __join_parent__(self: T, parent: T, key: Optional[Hashable] = None) -> None:
         self._parent = parent
-        self._root = parent.root()
+        self._root = parent.root
         self._key = key
 
     def items(
