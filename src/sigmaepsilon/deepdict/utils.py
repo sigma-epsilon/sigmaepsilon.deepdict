@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Iterable, Tuple, Any, List, Hashable, Optional, Union
+from typing import Iterable, Tuple, Any, List, Hashable, Optional, Union, TypeVar, Callable
 from copy import copy
 
 try:
@@ -8,6 +8,9 @@ except ImportError:
     ascitree = None
 
 __all__ = ["dictparser", "parseaddress", "parseitems", "parsedicts", "parsedicts_addr"]
+
+
+DictLike = TypeVar("DictLike")
 
 
 def dictparser(d: dict, *, dtype=dict, **_kw) -> Iterable[Tuple[List[Hashable], Any]]:
@@ -199,6 +202,24 @@ def _asciitree(data: dict, dtype: type = dict, **_kw) -> dict:
     return tree
 
 
+def _wrap(data: dict, wrapper: DictLike, tr:Optional[Union[Callable, None]]=None, **_kw) -> DictLike:
+    result = _kw.get("_result", None)
+    if result is None:
+        result = wrapper()
+        
+    if tr is None:
+        tr = lambda x: x
+        
+    for key, value in data.items():
+        if isinstance(value, dict):
+            result[key] = wrapper()
+            _wrap(value, wrapper, tr=tr, _result=result[key])
+        else:
+            result[key] = tr(value)
+            
+    return result
+
+
 if asciitree is None:  # pragma: no cover
 
     def asciiprint(*_, **__) -> str:
@@ -210,7 +231,7 @@ else:
     def asciiprint(
         data: dict,
         *,
-        dtype: Optional[type] = dict,
+        dtype: Optional[Union[type, None]] = None,
         tr: Optional[Union[asciitree.KeyArgsConstructor, None]] = None,
     ) -> None:
         """
@@ -221,8 +242,9 @@ else:
         data: dict, Optional
             A dictionary.
         dtype: type, Optional
-            If a valid type is provided (a subclass of `dict`), then the tee
-            will only include containers of that class. Default is `dict`.
+            If a valid type is provided (a subclass of `dict`), then the tree
+            will only include containers of that class. Default is None, in which case
+            only containers with the same type as 'data' are included in the output.
         tr: asciitree.KeyArgsConstructor, Optional
             A formatter to use. Default is None, in which case a `asciitree.LeftAligned`
             instance is created at runtime.
@@ -246,6 +268,11 @@ else:
          +-- c
              +-- cc
         """
+        dtype = data.__class__ if dtype is None else dtype
+        
+        if not isinstance(data, dict):
+            raise TypeError("Type of 'data' must be a subclass of 'dict'")
+        
         if not issubclass(dtype, dict):
             raise TypeError("'dtype' must be a subclass of 'dict'")
 

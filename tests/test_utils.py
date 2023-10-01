@@ -22,6 +22,7 @@ class TestPickle(SigmaEpsilonTestCase):
         suppress(asciiprint)(data)
 
         self.assertFailsProperly(TypeError, asciiprint, data, dtype=float)
+        self.assertFailsProperly(TypeError, asciiprint, 10)
 
 
 if __name__ == "__main__":
