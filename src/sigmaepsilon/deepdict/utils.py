@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Iterable, Tuple, Any, List, Hashable, Optional, Union, TypeVar
+from typing import Iterable, Tuple, Any, List, Hashable, Optional, Union, TypeVar, Callable
 from copy import copy
 
 try:
@@ -202,17 +202,20 @@ def _asciitree(data: dict, dtype: type = dict, **_kw) -> dict:
     return tree
 
 
-def _wrap(data: dict, wrapper: DictLike, deepcopy:bool=False, **_kw) -> DictLike:
+def _wrap(data: dict, wrapper: DictLike, tr:Optional[Union[Callable, None]]=None, **_kw) -> DictLike:
     result = _kw.get("_result", None)
     if result is None:
         result = wrapper()
         
+    if tr is None:
+        tr = lambda x: x
+        
     for key, value in data.items():
         if isinstance(value, dict):
             result[key] = wrapper()
-            _wrap(value, wrapper, deepcopy=deepcopy, _result=result[key])
+            _wrap(value, wrapper, tr=tr, _result=result[key])
         else:
-            result[key] = value
+            result[key] = tr(value)
             
     return result
 
