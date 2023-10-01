@@ -63,6 +63,8 @@ Each subdirectory is aware about it's parent container
 0
 ```
 
+See the documentation for more examples and explanation on behaviour.
+
 ## **Documentation**
 
 The [documentation](https://sigmaepsilondeepdict.readthedocs.io/en/latest/) is built with [Sphinx](https://www.sphinx-doc.org/en/master/) using the [PyData Sphinx Theme](https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html) and hosted on [ReadTheDocs](https://readthedocs.org/).
