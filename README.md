@@ -1,4 +1,4 @@
-# **SigmaEpsilon.DeepDict** - A Lightweight Python library to manage nested dictionaries with parent-child relationships
+# **SigmaEpsilon.DeepDict** - A lightweight Python library to handle nested dictionaries
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/sigma-epsilon/sigmaepsilon.deepdict/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/sigma-epsilon/sigmaepsilon.deepdict/tree/main)
 [![codecov](https://codecov.io/gh/sigma-epsilon/sigmaepsilon.deepdict/graph/badge.svg?token=7JKJ3HHSX3)](https://codecov.io/gh/sigma-epsilon/sigmaepsilon.deepdict)
@@ -11,7 +11,7 @@
 
 The `DeepDict` class works very similarly to a regular `dict`, but makes life easier in sutiations where there are nested levels, especially when such dictionary is to be created dynamically.
 
-## Motivating example
+## Motivating examples
 
 Consider the following simple dictionary
 
@@ -63,6 +63,24 @@ Each subdirectory is aware about it's parent container
 0
 ```
 
+Given that the `asciitree` library is installed, it is also possible to print dictionaries (any kind) as a tree:
+
+```python
+>>> from sigmaepsilon.deepdict import asciiprint
+>>> d = {
+...     "a" : {"aa" : 1},
+...     "b" : 2,
+...     "c" : {"cc" : {"ccc" : 3}},
+... }
+>>> data = DeepDict.wrap(d)
+>>> data.name = "Data"
+>>> asciiprint(data)
+Data
+    +-- a
+    +-- c
+        +-- cc
+```
+
 See the documentation for more examples and explanation on behaviour.
 
 ## **Documentation**
@@ -87,14 +105,6 @@ The library can be installed (either in a virtual enviroment or globally) from P
 
 ```console
 >>> pip install sigmaepsilon.deepdict
-```
-
-## **Testing**
-
-To run all tests, open up a console in the root directory of the project and type the following
-
-```console
->>> pytest
 ```
 
 ## **License**
