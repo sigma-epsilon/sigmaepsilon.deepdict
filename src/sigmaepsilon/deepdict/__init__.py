@@ -4,7 +4,14 @@ from importlib.metadata import metadata
 from sigmaepsilon.core.config import namespace_package_name
 
 from .deepdict import DeepDict, Key, Value
-from .utils import dictparser, parseaddress, parsedicts, parseitems, parsedicts_addr
+from .utils import (
+    dictparser,
+    parseaddress,
+    parsedicts,
+    parseitems,
+    parsedicts_addr,
+    asciiprint,
+)
 
 __all__ = [
     "DeepDict",
@@ -15,6 +22,7 @@ __all__ = [
     "parseitems",
     "parsedicts",
     "parsedicts_addr",
+    "asciiprint",
 ]
 
 __pkg_name__ = namespace_package_name(dirname(abspath(__file__)), 10)
