@@ -5,7 +5,7 @@ from copy import copy
 try:
     import asciitree
 except ImportError:
-    ascitree = None
+    asciitree = None
 
 __all__ = ["dictparser", "parseaddress", "parseitems", "parsedicts", "parsedicts_addr"]
 
