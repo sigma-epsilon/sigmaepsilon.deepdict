@@ -65,6 +65,7 @@ class DeepDict(dict, Generic[T]):
         self._root = None
         self._locked = None
         self._key = None
+        self._name = None
 
     @property
     def parent(self: T) -> Union[T, None, "DeepDict"]:
@@ -86,6 +87,24 @@ class DeepDict(dict, Generic[T]):
             else:
                 return self.parent.root
 
+    @property
+    def name(self) -> Union[str, None]:
+        """
+        The name of the dictionary. It is used for representation purposes.
+        If a name is not specified, the `key` is returned here. Setting a name
+        may be important for the top level entity, since it has no key.
+        """
+        if self._name is None:
+            return self._key
+        else:
+            return self._name
+        
+    @name.setter
+    def name(self, value:str) -> None:
+        if not isinstance(value, str):
+            raise TypeError(f"Name must be a string, it is {type(value)}")
+        self._name = value
+    
     @property
     def key(self) -> Union[Hashable, None]:
         """
@@ -473,3 +492,4 @@ class DeepDict(dict, Generic[T]):
         else:
             for k in super().keys():
                 yield k
+                
