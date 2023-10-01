@@ -1,5 +1,6 @@
 # http://stackoverflow.com/a/6190500/562769
 from typing import Hashable, Union, Tuple, Any, TypeVar, Iterable, Optional, Generic
+from copy import copy as shallow_copy, deepcopy as deep_copy
 
 from sigmaepsilon.core.typing import issequence
 from sigmaepsilon.core import Wrapper
@@ -145,9 +146,20 @@ class DeepDict(dict, Generic[T]):
             return r
 
     @classmethod
-    def wrap(cls: T, d: dict) -> Union[T, "DeepDict"]:
+    def wrap(
+        cls: T, d: dict, copy: bool = False, deepcopy: bool = False
+    ) -> Union[T, "DeepDict"]:
         """
         Wraps a dictionary with all nested dictionaries and content.
+
+        Parameters
+        ----------
+        d: dict
+            The dictionary to wrap.
+        copy: bool, Optional
+            If `True`, shallow copies of the values are stored. Default is False.
+        deepcopy: bool, Optional
+            If `True`, deep copies of the values are stored. Default is False.
 
         Example
         -------
@@ -163,8 +175,19 @@ class DeepDict(dict, Generic[T]):
         >>> list(DeepDict.wrap(d).items(deep=True))
         [('aa', 1), ('b', 2), ('ccc', 3)]
         """
-        return _wrap(d, cls)
-        
+        if copy and deepcopy:
+            raise ValueError("Only one of 'copy' and 'deepcopy' can be True.")
+
+        tr = None
+
+        if copy:
+            tr = shallow_copy
+
+        if deepcopy:
+            tr = deep_copy
+
+        return _wrap(d, cls, tr=tr)
+
     def lock(self) -> None:
         """
         Locks the layout of the dictionary. If a `DeepDict` is locked,
