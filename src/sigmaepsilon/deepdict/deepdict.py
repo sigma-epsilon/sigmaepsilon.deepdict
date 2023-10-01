@@ -4,7 +4,7 @@ from typing import Hashable, Union, Tuple, Any, TypeVar, Iterable, Optional, Gen
 from sigmaepsilon.core.typing import issequence
 from sigmaepsilon.core import Wrapper
 
-from .utils import dictparser, parseitems, parsedicts
+from .utils import dictparser, parseitems, parsedicts, _wrap
 
 
 __all__ = ["DeepDict", "Key", "Value"]
@@ -163,11 +163,8 @@ class DeepDict(dict, Generic[T]):
         >>> list(DeepDict.wrap(d).items(deep=True))
         [('aa', 1), ('b', 2), ('ccc', 3)]
         """
-        result = cls()
-        for subaddress, value in dictparser(d):
-            result[subaddress] = value
-        return result
-
+        return _wrap(d, cls)
+        
     def lock(self) -> None:
         """
         Locks the layout of the dictionary. If a `DeepDict` is locked,
