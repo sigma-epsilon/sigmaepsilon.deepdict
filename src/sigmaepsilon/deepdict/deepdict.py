@@ -43,7 +43,7 @@ class DeepDict(dict, Generic[T]):
         Extra positional arguments are forwarded to the `dict` class.
     **kwargs**: dictionary, Optional
         Extra keyword arguments are forwarded to the `dict` class.
-    
+
     Examples
     --------
     Basic usage:
@@ -73,7 +73,7 @@ class DeepDict(dict, Generic[T]):
         Returns the parent of the instance, or None if it has no parent.
         """
         return self._parent
-    
+
     @property
     def root(self: T) -> Union[T, None, "DeepDict"]:
         """
@@ -98,13 +98,13 @@ class DeepDict(dict, Generic[T]):
             return self._key
         else:
             return self._name
-        
+
     @name.setter
-    def name(self, value:str) -> None:
+    def name(self, value: str) -> None:
         if not isinstance(value, str):
             raise TypeError(f"Name must be a string, it is {type(value)}")
         self._name = value
-    
+
     @property
     def key(self) -> Union[Hashable, None]:
         """
@@ -492,4 +492,3 @@ class DeepDict(dict, Generic[T]):
         else:
             for k in super().keys():
                 yield k
-                

@@ -188,7 +188,7 @@ def parsedicts_addr(
                     yield subaddr, subval
 
 
-def _asciitree(data: dict, dtype:type=dict, **_kw) -> dict:
+def _asciitree(data: dict, dtype: type = dict, **_kw) -> dict:
     tree = _kw.get("_tree", {})
     name = getattr(data, "name", data.__class__.__name__)
     name = data.__class__.__name__ if name is None else name
@@ -204,6 +204,7 @@ if asciitree is None:  # pragma: no cover
     def asciiprint(*_, **__) -> str:
         raise ImportError("This requires the 'asciitree' package.")
 
+
 else:
 
     def asciiprint(
@@ -214,7 +215,7 @@ else:
     ) -> None:
         """
         Prints a dictionary as a tree using the ASCII character set.
-        
+
         Parameters
         ----------
         data: dict, Optional
@@ -225,11 +226,11 @@ else:
         tr: asciitree.KeyArgsConstructor, Optional
             A formatter to use. Default is None, in which case a `asciitree.LeftAligned`
             instance is created at runtime.
-        
+
         Notes
         -----
         This requires the `asciitree` package to be installed.
-        
+
         Example
         -------
         >>> from sigmaepsilon.deepdict import DeepDict, asciiprint
