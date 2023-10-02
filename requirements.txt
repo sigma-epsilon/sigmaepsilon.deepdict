@@ -1,5 +1,5 @@
-setuptools
-wheel
+setuptools >= 65.5.1
+wheel >= 0.38.0
 six
 
 sigmaepsilon.core >= 1.2.0, < 2.0.0
