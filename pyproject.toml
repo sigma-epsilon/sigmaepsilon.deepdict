@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sigmaepsilon.deepdict"
-version = "1.2.1"
+version = "1.2.2"
 description = "Linked deep dictionaries in Python."
 classifiers=[
         "Development Status :: 5 - Production/Stable",
