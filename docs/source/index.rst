@@ -121,7 +121,7 @@ The following projects all build on the :ref:`DeepDict` class:
    The `PolyData` class and other mesh data container classes are subclasses of :ref:`DeepDict`.
 
 .. note::
-   If you are using this library and you want your stuff to be lsited here, get in contact
+   If you are using this library and you want your stuff to be listed here, get in contact
    with one of the maintainers of the project.
 
 Contents
