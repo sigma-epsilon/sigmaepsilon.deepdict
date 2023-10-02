@@ -1,3 +1,7 @@
 flake8
 ipykernel
+ipython >= 8.10.0
 asciitree
+
+setuptools >= 65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
+tornado >= 6.3.3  # not directly required, pinned by Snyk to avoid a vulnerability
