@@ -17,8 +17,7 @@ jobs:
           pkg-manager: poetry
       - run:
           name: Install project
-          command: |
-            poetry install --with test
+          command: poetry install --with test
       - run:
           name: Run tests and generate coverage report
           command: |
