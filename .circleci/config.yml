@@ -13,8 +13,6 @@ jobs:
     executor: my-executor
     steps:
       - checkout
-      - python/install-packages:
-          pkg-manager: poetry
       - run:
           name: Install project
           command: |
