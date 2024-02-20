@@ -16,13 +16,11 @@ jobs:
       - python/install-packages:
           pkg-manager: poetry
       - run:
-          name: Install project
-          command: poetry install --with test
-      - run:
-          name: Run tests and generate coverage report
+          name: Create virtual environment
           command: |
-            chmod +x ./run_pytest_cov.sh
-            ./run_pytest_cov.sh
+            poetry env use python3
+            poetry install --only test --sync
+            poetry run pytest --cov-report html --cov-config=.coveragerc --cov sigmaepsilon.deepdict
       - run:
           name: Upload coverage reports to Codecov
           command: |
