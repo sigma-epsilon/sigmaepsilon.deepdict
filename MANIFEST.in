@@ -1,0 +1,13 @@
+# MANIFEST.in
+
+# read more - https://setuptools.pypa.io/en/latest/userguide/miscellaneous.html
+
+graft src
+graft tests
+graft docs
+
+include tox.ini
+include README.md
+include LICENSE
+
+global-exclude *~ *.py[cod] *.so
