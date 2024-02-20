@@ -19,7 +19,7 @@ jobs:
           name: Create virtual environment
           command: |
             poetry env use python3
-            poetry install --only test --sync
+            poetry install --with test --sync
             poetry run pytest --cov-report html --cov-config=.coveragerc --cov sigmaepsilon.deepdict
       - run:
           name: Upload coverage reports to Codecov
