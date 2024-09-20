@@ -9,9 +9,9 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Requirements Status](https://dependency-dash.repo-helper.uk/github/sigma-epsilon/sigmaepsilon.deepdict/badge.svg)](https://dependency-dash.repo-helper.uk/github/sigma-epsilon/sigmaepsilon.deepdict)
 
-The `DeepDict` class works very similarly to a regular `dict`, but makes life easier in sutiations where there are nested levels, especially when such dictionary is to be created dynamically.
+`sigmaepsilon.deepdict` is a lightweight Python library designed to handle nested dictionaries more easily, especially in cases where dictionaries are created dynamically. Its key feature is the `DeepDict` class, which extends the regular dict to support nested layouts. It allows easy manipulation of deeply nested structures, array-like indexing, and automatic creation of deep dictionary levels without manually defining all parent keys. It is particularly useful in scenarios involving hierarchical data. The library also supports printing dictionaries as trees.
 
-## Motivating examples
+## Highlights
 
 Consider the following simple dictionary
 
@@ -19,7 +19,7 @@ Consider the following simple dictionary
 >>> d = {
 ...   "a" : {"aa" : 1},
 ...   "b" : 2,
-...   "c" : {"cc" : {"ccc" : 3}}, 
+...   "c" : {"cc" : {"ccc" : 3}},
 ... }
 ```
 
@@ -39,14 +39,14 @@ If you wrap it as a `DeepDict`:
 [1, 2, 3]
 ```
 
-The class supports array-like indexing, which combined with the default factory creates the possibility to create deep levels without having to create all the parents:
+The class allows array-like indexing, and when combined with the default factory, enables the creation of deep levels without manually defining all parent keys:
 
 ```python
 >>> data = DeepDict()
 >>> data["a", 0, "b", 1, 5] = 10
 ```
 
-Each subdirectory is aware about it's parent container
+Each subdirectory is aware about its parent container
 
 ```python
 >>> data["a", 0, "b"].key
@@ -89,19 +89,7 @@ The [documentation](https://sigmaepsilondeepdict.readthedocs.io/en/latest/) is b
 
 ## **Installation**
 
-This is optional, but we suggest you to create a dedicated virtual enviroment at all times to avoid conflicts with your other projects. Create a folder, open a command shell in that folder and use the following command
-
-```console
->>> python -m venv venv_name
-```
-
-Once the enviroment is created, activate it via typing
-
-```console
->>> .\venv_name\Scripts\activate
-```
-
-The library can be installed (either in a virtual enviroment or globally) from PyPI using `pip` on Python >= 3.7:
+The library can be installed from PyPI using `pip` on Python >= 3.10:
 
 ```console
 >>> pip install sigmaepsilon.deepdict
