@@ -1,5 +1,5 @@
 # http://stackoverflow.com/a/6190500/562769
-from typing import Hashable, Union, Tuple, Any, TypeVar, Iterable, Optional, Generic
+from typing import Hashable, Union, Tuple, Any, TypeVar, Iterable, Generic
 from copy import copy as shallow_copy, deepcopy as deep_copy
 from types import NoneType
 
@@ -59,6 +59,8 @@ class DeepDict(dict, Generic[DT]):
     [0, 1, 2]
 
     """
+    
+    __slots__ = ["_parent", "_root", "_locked", "_key", "_name"]
 
     def __init__(self, *args, **kwargs):
         for k, v in kwargs.items():
@@ -93,7 +95,7 @@ class DeepDict(dict, Generic[DT]):
                 return self.parent.root
 
     @property
-    def name(self) -> Union[str, NoneType]:
+    def name(self) -> str | NoneType:
         """
         The name of the dictionary. It is used for representation purposes.
         If a name is not specified, the `key` is returned here. Setting a name
@@ -111,7 +113,7 @@ class DeepDict(dict, Generic[DT]):
         self._name = value
 
     @property
-    def key(self) -> Union[Hashable, NoneType]:
+    def key(self) -> Hashable | NoneType:
         """
         Returns the key of the instance, or `None` if it has no parent.
         """
@@ -245,9 +247,9 @@ class DeepDict(dict, Generic[DT]):
     def containers(
         self: DT,
         *,
-        inclusive: Optional[bool] = False,
-        deep: Optional[bool] = True,
-        dtype: Optional[Any] = None,
+        inclusive: bool = False,
+        deep: bool = True,
+        dtype: Any = None,
     ) -> Iterable[DT]:
         """
         Returns all the containers in a nested layout. A dictionary in a nested layout
@@ -300,7 +302,7 @@ class DeepDict(dict, Generic[DT]):
         dtype = self.__class__ if dtype is None else dtype
         return parsedicts(self, inclusive=inclusive, dtype=dtype, deep=deep)
 
-    def __getitem__(self: DT, key) -> Union[Any, DT]:
+    def __getitem__(self: DT, key) -> Any | DT:
         try:
             if isinstance(key, Key):
                 return super().__getitem__(key.wrapped)
@@ -428,7 +430,7 @@ class DeepDict(dict, Generic[DT]):
         self._key = None
 
     def __join_parent__(
-        self: DT, parent: DT, key: Optional[Hashable] = None
+        self: DT, parent: DT, key: Hashable | NoneType = None
     ) -> NoneType:
         self._parent = parent
         self._root = parent.root
@@ -492,7 +494,7 @@ class DeepDict(dict, Generic[DT]):
 
     def values(
         self: DT, *, deep: bool = False, return_address: bool = False, vtype: type = Any
-    ) -> Iterable[Union[Any, DT]]:
+    ) -> Iterable[Any | DT]:
         """
         Returns the values. When called without arguments, it works the same as for
         standard dictionaries.
@@ -507,22 +509,6 @@ class DeepDict(dict, Generic[DT]):
             Default is False.
         vtype: type, Optional
             The type of the values to return. Default is `Any`.
-
-        Examples
-        --------
-        >>> from sigmaepsilon.deepdict import DeepDict
-        >>>
-        >>> d = {'a' : {'aa' : {'aaa' : 0}}, 'b' : 1.0, 'c' : {'cc' : 2.0}}
-        >>> dd = DeepDict(d)
-        >>> list(dd.values(deep=True))
-        [0, 1.0, 2.0]
-
-        >>> list(dd.values(deep=True, vtype=int))
-        [0]
-
-        >>> list(dd.values(deep=True, vtype=float))
-        [1.0, 2.0]
-
         """
         if vtype is Any:
             for v in self._values(deep=deep, return_address=return_address):
@@ -535,8 +521,8 @@ class DeepDict(dict, Generic[DT]):
     def keys(
         self: DT,
         *,
-        deep: Optional[bool] = False,
-        return_address: Optional[bool] = False,
+        deep: bool = False,
+        return_address: bool = False,
     ) -> Iterable[Hashable]:
         """
         Returns the keys. When called without arguments, it works the same as for
