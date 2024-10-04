@@ -9,7 +9,7 @@ from typing import (
     Union,
     TypeVar,
     Callable,
-    Generator
+    Generator,
 )
 from copy import copy
 

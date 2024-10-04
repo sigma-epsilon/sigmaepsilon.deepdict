@@ -59,26 +59,26 @@ class DeepDict(dict, Generic[_DT, _VT]):
     >>> dd = DeepDict.wrap(d)
     >>> list(dd.values(deep=True))
     [0, 1.0, 2.0]
-    
+
     Getting values of a specific type:
-    
+
     >>> list(dd.values(deep=True, vtype=int))
     [0]
-    
+
     >>> list(dd.values(deep=True, vtype=float))
     [1.0, 2.0]
-    
+
     Array-like access:
-    
+
     >>> dd['a', 'aa', 'aaa']
     0
-    
+
     Not that array-like access only works in this case because the original
     dictionary `d` was wrapped. If you create the instance like this,
-    
+
     code-block:: python
         >>> dd = DeepDict(d)
-    
+
     array-like access will not work and you will see a `KeyError`.
 
     """
@@ -307,7 +307,7 @@ class DeepDict(dict, Generic[_DT, _VT]):
 
         We can see, that dictionaries 'a' and 'b' are returned as containers, but 'c'
         isn't,  because it is not a parent, there are no deeper levels.
-        
+
         With the `inclusive` parameter set to `True`, the object the call is made upon
         is also returned. Since the root of the layout has no parent, its key is `None`.
 
@@ -315,7 +315,7 @@ class DeepDict(dict, Generic[_DT, _VT]):
         [None, 'a', 'b']
 
         A few more examples:
-        
+
         >>> [c.key for c in data.containers(inclusive=True, deep=False)]
         [None, 'a']
 
@@ -412,7 +412,7 @@ class DeepDict(dict, Generic[_DT, _VT]):
                 value = self[key[0]]
 
             if len(key) > 1:
-                return value.__missing__(key[1:])   
+                return value.__missing__(key[1:])
             else:
                 return value
 
