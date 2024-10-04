@@ -1,16 +1,27 @@
 # -*- coding: utf-8 -*-
-from typing import Iterable, Tuple, Any, List, Hashable, Optional, Union, TypeVar, Callable
+from typing import (
+    Iterable,
+    Tuple,
+    Any,
+    List,
+    Hashable,
+    Optional,
+    Union,
+    TypeVar,
+    Callable,
+    Generator
+)
 from copy import copy
 
 try:
     import asciitree
-except ImportError:
+except ImportError:  # pragma: no cover
     asciitree = None
 
 __all__ = ["dictparser", "parseaddress", "parseitems", "parsedicts", "parsedicts_addr"]
 
 
-DictLike = TypeVar("DictLike")
+DictLike = TypeVar("DictLike", bound=dict)
 
 
 def dictparser(d: dict, *, dtype=dict, **_kw) -> Iterable[Tuple[List[Hashable], Any]]:
@@ -107,7 +118,7 @@ def parseitems(d: dict, *, dtype: Any = dict) -> Iterable[Tuple[Hashable, Any]]:
 
 def parsedicts(
     d: dict, *, inclusive: bool = True, dtype: Any = dict, deep: bool = True
-) -> Iterable[dict]:
+) -> Generator[dict, None, None]:
     """
     Returns all subdirectories of a dictionary.
 
@@ -147,7 +158,7 @@ def parsedicts(
 
 def parsedicts_addr(
     d: dict, *, inclusive: bool = True, dtype: Any = dict, deep: bool = True, **_kw
-) -> Tuple[List[Hashable], Iterable[dict]]:
+) -> Generator[tuple[Hashable, dict], None, None]:
     """
     Returns all subdirectories of a dictionary and their addresses.
 
@@ -202,21 +213,23 @@ def _asciitree(data: dict, dtype: type = dict, **_kw) -> dict:
     return tree
 
 
-def _wrap(data: dict, wrapper: DictLike, tr:Optional[Union[Callable, None]]=None, **_kw) -> DictLike:
+def _wrap(
+    data: dict, wrapper: DictLike, tr: Optional[Union[Callable, None]] = None, **_kw
+) -> DictLike:
     result = _kw.get("_result", None)
     if result is None:
         result = wrapper()
-        
+
     if tr is None:
         tr = lambda x: x
-        
+
     for key, value in data.items():
         if isinstance(value, dict):
             result[key] = wrapper()
             _wrap(value, wrapper, tr=tr, _result=result[key])
         else:
             result[key] = tr(value)
-            
+
     return result
 
 
@@ -225,14 +238,13 @@ if asciitree is None:  # pragma: no cover
     def asciiprint(*_, **__) -> str:
         raise ImportError("This requires the 'asciitree' package.")
 
-
 else:
 
     def asciiprint(
         data: dict,
         *,
-        dtype: Optional[Union[type, None]] = None,
-        tr: Optional[Union[asciitree.KeyArgsConstructor, None]] = None,
+        dtype: Any = None,
+        tr: Any = None,
     ) -> None:
         """
         Prints a dictionary as a tree using the ASCII character set.
@@ -269,10 +281,10 @@ else:
              +-- cc
         """
         dtype = data.__class__ if dtype is None else dtype
-        
+
         if not isinstance(data, dict):
             raise TypeError("Type of 'data' must be a subclass of 'dict'")
-        
+
         if not issubclass(dtype, dict):
             raise TypeError("'dtype' must be a subclass of 'dict'")
 
