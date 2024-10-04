@@ -1,6 +1,7 @@
 # http://stackoverflow.com/a/6190500/562769
 from typing import Hashable, Union, Tuple, Any, TypeVar, Iterable, Optional, Generic
 from copy import copy as shallow_copy, deepcopy as deep_copy
+from types import NoneType
 
 from sigmaepsilon.core.typing import issequence
 from sigmaepsilon.core import Wrapper
@@ -11,7 +12,7 @@ from .utils import dictparser, parseitems, parsedicts, _wrap
 __all__ = ["DeepDict", "Key", "Value"]
 
 
-T = TypeVar("T", bound="DeepDict")
+DT = TypeVar("DT", bound="DeepDict")
 
 
 class Key(Wrapper):
@@ -32,9 +33,10 @@ class Value(Wrapper):
         super().__init__(wrap=arg)
 
 
-class DeepDict(dict, Generic[T]):
+class DeepDict(dict, Generic[DT]):
     """
     An nested dictionary class with a self-replicating default factory.
+
     It can be a drop-in replacement for the bulit-in dictionary type,
     but it's more capable as it handles nested layouts.
 
@@ -50,10 +52,12 @@ class DeepDict(dict, Generic[T]):
     Basic usage:
 
     >>> from sigmaepsilon.deepdict import DeepDict
+    >>>
     >>> d = {'a' : {'aa' : {'aaa' : 0}}, 'b' : 1, 'c' : {'cc' : 2}}
     >>> dd = DeepDict(d)
     >>> list(dd.values(deep=True))
     [0, 1, 2]
+
     """
 
     def __init__(self, *args, **kwargs):
@@ -69,14 +73,14 @@ class DeepDict(dict, Generic[T]):
         self._name = None
 
     @property
-    def parent(self: T) -> Union[T, None, "DeepDict"]:
+    def parent(self: DT) -> Union[DT, NoneType, "DeepDict"]:
         """
         Returns the parent of the instance, or None if it has no parent.
         """
         return self._parent
 
     @property
-    def root(self: T) -> Union[T, None, "DeepDict"]:
+    def root(self: DT) -> Union[DT, NoneType, "DeepDict"]:
         """
         Returns the top-level object in a nested layout.
         """
@@ -89,7 +93,7 @@ class DeepDict(dict, Generic[T]):
                 return self.parent.root
 
     @property
-    def name(self) -> Union[str, None]:
+    def name(self) -> Union[str, NoneType]:
         """
         The name of the dictionary. It is used for representation purposes.
         If a name is not specified, the `key` is returned here. Setting a name
@@ -101,13 +105,13 @@ class DeepDict(dict, Generic[T]):
             return self._name
 
     @name.setter
-    def name(self, value: str) -> None:
+    def name(self, value: str) -> NoneType:
         if not isinstance(value, str):
             raise TypeError(f"Name must be a string, it is {type(value)}")
         self._name = value
 
     @property
-    def key(self) -> Union[Hashable, None]:
+    def key(self) -> Union[Hashable, NoneType]:
         """
         Returns the key of the instance, or `None` if it has no parent.
         """
@@ -136,7 +140,7 @@ class DeepDict(dict, Generic[T]):
             return self.parent.depth + 1
 
     @property
-    def address(self) -> Union[Tuple, None]:
+    def address(self) -> tuple | NoneType:
         """Returns the address of an item or `None` it has no parent."""
         if self.is_root():
             return []
@@ -147,8 +151,8 @@ class DeepDict(dict, Generic[T]):
 
     @classmethod
     def wrap(
-        cls: T, d: dict, copy: bool = False, deepcopy: bool = False
-    ) -> Union[T, "DeepDict"]:
+        cls: DT, d: dict, copy: bool = False, deepcopy: bool = False
+    ) -> Union[DT, "DeepDict"]:
         """
         Wraps a dictionary with all nested dictionaries and content.
 
@@ -188,7 +192,7 @@ class DeepDict(dict, Generic[T]):
 
         return _wrap(d, cls, tr=tr)
 
-    def lock(self) -> None:
+    def lock(self) -> NoneType:
         """
         Locks the layout of the dictionary. If a `DeepDict` is locked,
         missing keys are handled the same way as they would've been handled
@@ -197,7 +201,7 @@ class DeepDict(dict, Generic[T]):
         """
         self._locked = True
 
-    def unlock(self) -> None:
+    def unlock(self) -> NoneType:
         """
         Releases the layout of the dictionary. If a `DeepDict` is not locked,
         a missing key creates a new level in the layout, also setting and deleting
@@ -211,7 +215,7 @@ class DeepDict(dict, Generic[T]):
         """
         return self.parent is None
 
-    def is_leaf(self: T, dtype: Optional[Any] = None) -> bool:
+    def is_leaf(self: DT, dtype: Any = None) -> bool:
         """
         Returns `True`, if the instance has no children.
 
@@ -239,12 +243,12 @@ class DeepDict(dict, Generic[T]):
         return not any(list([isinstance(v, dtype) for v in self.values()]))
 
     def containers(
-        self: T,
+        self: DT,
         *,
         inclusive: Optional[bool] = False,
         deep: Optional[bool] = True,
         dtype: Optional[Any] = None,
-    ) -> Iterable[T]:
+    ) -> Iterable[DT]:
         """
         Returns all the containers in a nested layout. A dictionary in a nested layout
         is called a container, only if it contains other containers (it is a parent).
@@ -296,7 +300,7 @@ class DeepDict(dict, Generic[T]):
         dtype = self.__class__ if dtype is None else dtype
         return parsedicts(self, inclusive=inclusive, dtype=dtype, deep=deep)
 
-    def __getitem__(self: T, key) -> Union[Any, T]:
+    def __getitem__(self: DT, key) -> Union[Any, DT]:
         try:
             if isinstance(key, Key):
                 return super().__getitem__(key.wrapped)
@@ -313,7 +317,7 @@ class DeepDict(dict, Generic[T]):
         except KeyError:
             return self.__missing__(key)
 
-    def __delitem__(self, key) -> None:
+    def __delitem__(self, key) -> NoneType:
         if isinstance(key, Key):
             super().__delitem__(key.wrapped)
         elif issequence(key):
@@ -322,7 +326,7 @@ class DeepDict(dict, Generic[T]):
         else:
             super().__delitem__(key)
 
-    def __setitem__(self, key, value) -> None:
+    def __setitem__(self, key, value) -> NoneType:
         try:
             if isinstance(key, Key) or not issequence(key):
                 if key in self:
@@ -364,7 +368,7 @@ class DeepDict(dict, Generic[T]):
         except KeyError:
             return self.__missing__(key)
 
-    def __missing__(self: T, key) -> T:
+    def __missing__(self: DT, key) -> DT:
         if self.locked:
             raise KeyError(f"Missing key '{key}' and the object is locked!")
 
@@ -418,18 +422,34 @@ class DeepDict(dict, Generic[T]):
         frmtstr = self.__class__.__name__ + "(%s)"
         return frmtstr % (dict.__repr__(self))
 
-    def __leave_parent__(self) -> None:
+    def __leave_parent__(self) -> NoneType:
         self._parent = None
         self._root = None
         self._key = None
 
-    def __join_parent__(self: T, parent: T, key: Optional[Hashable] = None) -> None:
+    def __join_parent__(
+        self: DT, parent: DT, key: Optional[Hashable] = None
+    ) -> NoneType:
         self._parent = parent
         self._root = parent.root
         self._key = key
 
+    def _items(
+        self: DT, *, deep: bool = False, return_address: bool = False
+    ) -> Iterable[Tuple]:
+        if deep:
+            if return_address:
+                for addr, v in dictparser(self):
+                    yield addr, v
+            else:
+                for k, v in parseitems(self):
+                    yield k, v
+        else:
+            for k, v in super().items():
+                yield k, v
+
     def items(
-        self: T, *, deep: Optional[bool] = False, return_address: Optional[bool] = False
+        self: DT, *, deep: bool = False, return_address: bool = False, vtype: type = Any
     ) -> Iterable[Tuple]:
         """
         Returns the items. When called without arguments, it works the same as for
@@ -445,21 +465,34 @@ class DeepDict(dict, Generic[T]):
             than that of absolute and repative paths. In this respect, keys are the relative
             paths (relative to the parent), and addresses are absolute paths (relative to the root).
             Default is False.
+        vtype: type, Optional
+            The type of the values to return. Default is `Any`.
         """
+        if vtype is Any:
+            for k, v in self._items(deep=deep, return_address=return_address):
+                yield k, v
+        else:
+            for k, v in self._items(deep=deep, return_address=return_address):
+                if isinstance(v, vtype):
+                    yield k, v
+
+    def _values(
+        self: DT, *, deep: bool = False, return_address: bool = False
+    ) -> Iterable[Union[Any, DT]]:
         if deep:
             if return_address:
                 for addr, v in dictparser(self):
                     yield addr, v
             else:
-                for k, v in parseitems(self):
-                    yield k, v
+                for _, v in parseitems(self):
+                    yield v
         else:
-            for k, v in super().items():
-                yield k, v
+            for v in super().values():
+                yield v
 
     def values(
-        self: T, *, deep: Optional[bool] = False, return_address: Optional[bool] = False
-    ) -> Iterable[Union[Any, T]]:
+        self: DT, *, deep: bool = False, return_address: bool = False, vtype: type = Any
+    ) -> Iterable[Union[Any, DT]]:
         """
         Returns the values. When called without arguments, it works the same as for
         standard dictionaries.
@@ -472,20 +505,38 @@ class DeepDict(dict, Generic[T]):
         return_address: bool, Optional
             If `True`, addresses are returned as well.
             Default is False.
+        vtype: type, Optional
+            The type of the values to return. Default is `Any`.
+
+        Examples
+        --------
+        >>> from sigmaepsilon.deepdict import DeepDict
+        >>>
+        >>> d = {'a' : {'aa' : {'aaa' : 0}}, 'b' : 1.0, 'c' : {'cc' : 2.0}}
+        >>> dd = DeepDict(d)
+        >>> list(dd.values(deep=True))
+        [0, 1.0, 2.0]
+
+        >>> list(dd.values(deep=True, vtype=int))
+        [0]
+
+        >>> list(dd.values(deep=True, vtype=float))
+        [1.0, 2.0]
+
         """
-        if deep:
-            if return_address:
-                for addr, v in dictparser(self):
-                    yield addr, v
-            else:
-                for _, v in parseitems(self):
-                    yield v
-        else:
-            for v in super().values():
+        if vtype is Any:
+            for v in self._values(deep=deep, return_address=return_address):
                 yield v
+        else:
+            for v in self._values(deep=deep, return_address=return_address):
+                if isinstance(v, vtype):
+                    yield v
 
     def keys(
-        self: T, *, deep: Optional[bool] = False, return_address: Optional[bool] = False
+        self: DT,
+        *,
+        deep: Optional[bool] = False,
+        return_address: Optional[bool] = False,
     ) -> Iterable[Hashable]:
         """
         Returns the keys. When called without arguments, it works the same as for
