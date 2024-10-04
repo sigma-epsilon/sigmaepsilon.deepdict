@@ -117,24 +117,24 @@ class TestBehaviour(SigmaEpsilonTestCase):
     def test_values(self):
         d = {"a": {"aa": {"aaa": 0}}, "b": 1.0, "c": {"cc": 2.0}}
         dd = DeepDict(d)
-        self.assertEquals(list(dd.values(deep=True)), [0, 1.0, 2.0])
-        self.assertEquals(list(dd.values(deep=True, vtype=int)), [0])
-        self.assertEquals(list(dd.values(deep=True, vtype=float)), [1.0, 2.0])
-        self.assertEquals(list(dd.values(deep=True, vtype=bool)), [])
-        self.assertEquals(list(d.values()), list(dd.values()))
+        self.assertEqual(list(dd.values(deep=True)), [0, 1.0, 2.0])
+        self.assertEqual(list(dd.values(deep=True, vtype=int)), [0])
+        self.assertEqual(list(dd.values(deep=True, vtype=float)), [1.0, 2.0])
+        self.assertEqual(list(dd.values(deep=True, vtype=bool)), [])
+        self.assertEqual(list(d.values()), list(dd.values()))
 
     def test_items(self):
         d = {"a": {"aa": {"aaa": 0}}, "b": 1.0, "c": {"cc": 2.0}}
         dd = DeepDict(d)
-        self.assertEquals(
+        self.assertEqual(
             list(dd.items(deep=True)), [("aaa", 0), ("b", 1.0), ("cc", 2.0)]
         )
-        self.assertEquals(list(dd.items(deep=True, vtype=int)), [("aaa", 0)])
-        self.assertEquals(
+        self.assertEqual(list(dd.items(deep=True, vtype=int)), [("aaa", 0)])
+        self.assertEqual(
             list(dd.items(deep=True, vtype=float)), [("b", 1.0), ("cc", 2.0)]
         )
-        self.assertEquals(list(dd.items(deep=True, vtype=bool)), [])
-        self.assertEquals(list(d.items()), list(dd.items()))
+        self.assertEqual(list(dd.items(deep=True, vtype=bool)), [])
+        self.assertEqual(list(d.items()), list(dd.items()))
         
     def test_indexing(self):
         d = DeepDict()
