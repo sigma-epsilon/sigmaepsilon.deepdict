@@ -100,8 +100,6 @@ nitpick_ignore = [
 ]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = "sphinx"
-pygments_dark_style = "github-dark"
 highlight_language = "python3"
 
 intersphinx_mapping = {
@@ -113,7 +111,6 @@ intersphinx_mapping = {
     "pandas": (r"https://pandas.pydata.org/pandas-docs/stable/", None),
     "sigmaepsilon.core": (r"https://sigmaepsiloncore.readthedocs.io/en/latest/", None),
     "sigmaepsilon.math": (r"https://sigmaepsilonmath.readthedocs.io/en/latest/", None),
-    "linkeddeepdict": (r"https://linkeddeepdict.readthedocs.io/en/latest/", None),
 }
 
 # -- bibtex configuration -------------------------------------------------
@@ -132,6 +129,7 @@ html_theme = "pydata_sphinx_theme"
 
 html_theme_options = {
     "show_prev_next": True,
+    "back_to_top_button": True,
     "icon_links": [
         {
             "name": "GitHub",
@@ -148,13 +146,14 @@ html_theme_options = {
     ],
     "logo": {
         # Because the logo is also a homepage link, including "home" in the alt text is good practice
-        "text": f"SigmaEpsilon.DeepDict {version}",
-    }
+        "text": "SigmaEpsilon.DeepDict",
+    },
+    "pygments_light_style": "tango",
+    "pygments_dark_style": "github-dark",
 }
 
 html_context = {
-   # ...
-   "default_mode": "dark"
+   "default_mode": "light"
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
