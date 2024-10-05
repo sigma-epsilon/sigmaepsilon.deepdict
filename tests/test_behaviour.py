@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import unittest
+from dataclasses import dataclass
 
 from sigmaepsilon.core.testing import SigmaEpsilonTestCase
 from sigmaepsilon.deepdict import DeepDict, Key, Value
@@ -21,6 +22,8 @@ class TestBehaviour(SigmaEpsilonTestCase):
         d = DeepDict()
         d[1, 2] = "A"
         self.assertTrue((1, 2) in d)
+        d[1, 2] = None
+        self.assertFalse((1, 2) in d)
 
     def test_behaviour_3(self):
         data = DeepDict()
@@ -50,7 +53,7 @@ class TestBehaviour(SigmaEpsilonTestCase):
         def foo():
             DeepDict(d)["c", "cc", "ccc"]
 
-        self.assertFailsProperly(AttributeError, foo)
+        self.assertFailsProperly(KeyError, foo)
 
     def test_behaviour_6(self):
         data = DeepDict()
@@ -110,6 +113,62 @@ class TestBehaviour(SigmaEpsilonTestCase):
         data.name = "data"
         self.assertEqual(data.name, "data")
         self.assertFailsProperly(TypeError, lambda v: setattr(data, "name", v), 10)
+
+    def test_values(self):
+        d = {"a": {"aa": {"aaa": 0}}, "b": 1.0, "c": {"cc": 2.0}}
+        dd = DeepDict(d)
+        self.assertEqual(list(dd.values(deep=True)), [0, 1.0, 2.0])
+        self.assertEqual(list(dd.values(deep=True, vtype=int)), [0])
+        self.assertEqual(list(dd.values(deep=True, vtype=float)), [1.0, 2.0])
+        self.assertEqual(list(dd.values(deep=True, vtype=bool)), [])
+        self.assertEqual(list(d.values()), list(dd.values()))
+
+    def test_items(self):
+        d = {"a": {"aa": {"aaa": 0}}, "b": 1.0, "c": {"cc": 2.0}}
+        dd = DeepDict(d)
+        self.assertEqual(
+            list(dd.items(deep=True)), [("aaa", 0), ("b", 1.0), ("cc", 2.0)]
+        )
+        self.assertEqual(list(dd.items(deep=True, vtype=int)), [("aaa", 0)])
+        self.assertEqual(
+            list(dd.items(deep=True, vtype=float)), [("b", 1.0), ("cc", 2.0)]
+        )
+        self.assertEqual(list(dd.items(deep=True, vtype=bool)), [])
+        self.assertEqual(list(d.items()), list(dd.items()))
+        
+    def test_indexing(self):
+        d = DeepDict()
+        d[1, 2, 3] = "A"
+        self.assertEqual(d[1, 2, 3], "A")
+        self.assertEqual(d[1][2][3], "A")
+        self.assertEqual(d[1, 2][3], "A")
+        self.assertEqual(d[1][2, 3], "A")
+        self.assertEqual(d[[1, 2, 3]], "A")
+        
+        d = DeepDict()
+        d[[1, 2, 3]] = "A"
+        self.assertEqual(d[1, 2, 3], "A")
+        self.assertEqual(d[1][2][3], "A")
+        self.assertEqual(d[1, 2][3], "A")
+        self.assertEqual(d[1][2, 3], "A")
+        self.assertEqual(d[[1, 2, 3]], "A")
+        
+    def test_contains(self):
+        d = DeepDict()
+        d[[1, 2, 3]] = "A"
+        self.assertTrue([1, 2, 3] in d)
+        
+        with self.assertRaises(TypeError):
+            [1, [2], 3] in d
+            
+        @dataclass(frozen=False)
+        class Point:
+            x: int
+            y: int
+            
+        p1 = Point(1, 2)
+        with self.assertRaises(TypeError):
+            p1 in d
 
 
 if __name__ == "__main__":

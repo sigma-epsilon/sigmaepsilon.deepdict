@@ -2,34 +2,31 @@ version: 2.1
 
 orbs:
   python: circleci/python@2.1.1
+  codecov: codecov/codecov@4.2.0
 
 executors:
   my-executor:
     docker:
-      - image: cimg/python:3.10
+      - image: cimg/python:3.12
 
 jobs:
-  run_tests_3_10:
+  run_tests:
     executor: my-executor
     steps:
       - checkout
       - python/install-packages:
           pkg-manager: poetry
       - run:
-          name: Create virtual environment
+          name: Install project
           command: |
-            poetry env use python3
-            poetry install --with test --sync
-            poetry run pytest --cov-report html --cov-config=.coveragerc --cov sigmaepsilon.deepdict
+            poetry install --with test
       - run:
-          name: Upload coverage reports to Codecov
-          command: |
-            curl -Os https://uploader.codecov.io/latest/linux/codecov
-            chmod +x codecov
-            ./codecov -t ${CODECOV_TOKEN}
+          name: Run tests and generate coverage report
+          command: poetry run pytest --cov-report=xml --cov-config=.coveragerc --cov=sigmaepsilon.deepdict
       - store_artifacts:
           name: Store coverage report as artifact
-          path: htmlcov
+          path: coverage.xml
+      - codecov/upload
       - store_test_results:
           name: Store test results
           path: test-results
@@ -42,13 +39,13 @@ jobs:
           pkg-manager: poetry
       - run:
           name: Add new command
-          command: chmod +x ./poetry_export.sh
+          command: chmod +x ./export_requirements.sh
       - run:
           name: Build project
           command: |
             poetry check
             poetry lock
-            ./poetry_export.sh 
+            ./export_requirements.sh 
             poetry install
             poetry build
       - run:
@@ -66,13 +63,13 @@ jobs:
           pkg-manager: poetry
       - run:
           name: Add new command
-          command: chmod +x ./poetry_export.sh
+          command: chmod +x ./export_requirements.sh
       - run:
           name: Build project
           command: |
             poetry check
             poetry lock
-            ./poetry_export.sh 
+            ./export_requirements.sh 
             poetry install
             poetry build
       - run:
@@ -84,13 +81,13 @@ jobs:
 workflows:
   test_and_deploy:
     jobs:
-      - run_tests_3_10
+      - run_tests
 
       - deploy_to_test_pypi:
           context:
             - TestPyPI deploy
           requires:
-            - run_tests_3_10
+            - run_tests
           filters:
             branches:
               only:
@@ -100,7 +97,7 @@ workflows:
           context:
             - PyPI deploy
           requires:
-            - run_tests_3_10
+            - run_tests
           filters:
             branches:
               only:
