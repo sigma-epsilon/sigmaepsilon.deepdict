@@ -54,7 +54,6 @@ class DeepDict(dict, Generic[_DT, _VT]):
     Basic usage:
 
     >>> from sigmaepsilon.deepdict import DeepDict
-    >>>
     >>> d = {'a' : {'aa' : {'aaa' : 0}}, 'b' : 1.0, 'c' : {'cc' : 2.0}}
     >>> dd = DeepDict.wrap(d)
     >>> list(dd.values(deep=True))
