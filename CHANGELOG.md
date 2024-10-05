@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2023-10-01
+
+### Changed
+
+The generic types of the `DeepDict` class have been changed. Now it accepts types as the built-in `dict` type.
+
 ## [1.1.0] - 2023-10-01
 
 ### Added
