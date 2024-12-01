@@ -272,6 +272,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
         >>> dd = DeepDict.wrap(d)
         >>> dd.is_leaf(), dd["a"].is_leaf()
         (False, True)
+
         """
         dtype = self.__class__ if dtype is None else dtype
         return not any(list([isinstance(v, dtype) for v in self.values()]))
@@ -335,6 +336,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
 
         >>> [c.key for c in data.containers(inclusive=False, deep=False)]
         ['a']
+
         """
         dtype = self.__class__ if dtype is None else dtype
         return parsedicts(self, inclusive=inclusive, dtype=dtype, deep=deep)
@@ -353,12 +355,18 @@ class DeepDict(dict, Generic[_KT, _VT]):
 
     def __delitem__(self, key: _KT) -> NoneType:
         if isinstance(key, Key):
+            d = self[key.wrapped]
             super().__delitem__(key.wrapped)
+            if isinstance(d, DeepDict):
+                d.__leave_parent__()
         elif issequence(key):
             parent = self.__getitem__(key[:-1])
             parent.__delitem__(key[-1])
         else:
+            d = self[key]
             super().__delitem__(key)
+            if isinstance(d, DeepDict):
+                d.__leave_parent__()
 
     def __setitem__(self, key: _KT, value: _VT) -> NoneType:
         try:
