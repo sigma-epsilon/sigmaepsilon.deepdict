@@ -427,6 +427,9 @@ class DeepDict(dict, Generic[_KT, _VT]):
                 value = self[key[0]]
 
             if len(key) > 1:
+                if not isinstance(value, DeepDict):
+                    raise TypeError(f"The value of key '{key[0]}' is not a DeepDict!")
+
                 return value.__missing__(key[1:])
             else:
                 return value
