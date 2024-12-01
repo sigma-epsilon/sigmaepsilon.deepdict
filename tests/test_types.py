@@ -38,7 +38,7 @@ class TestDeepDict(unittest.TestCase):
         has_error = False
         try:
             data["a", "b", "d"] = 2
-        except:
+        except:  # pragma: no cover
             has_error = True
         finally:
             assert not has_error
