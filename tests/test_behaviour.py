@@ -135,7 +135,7 @@ class TestBehaviour(SigmaEpsilonTestCase):
         )
         self.assertEqual(list(dd.items(deep=True, vtype=bool)), [])
         self.assertEqual(list(d.items()), list(dd.items()))
-        
+
     def test_indexing(self):
         d = DeepDict()
         d[1, 2, 3] = "A"
@@ -144,7 +144,7 @@ class TestBehaviour(SigmaEpsilonTestCase):
         self.assertEqual(d[1, 2][3], "A")
         self.assertEqual(d[1][2, 3], "A")
         self.assertEqual(d[[1, 2, 3]], "A")
-        
+
         d = DeepDict()
         d[[1, 2, 3]] = "A"
         self.assertEqual(d[1, 2, 3], "A")
@@ -152,20 +152,20 @@ class TestBehaviour(SigmaEpsilonTestCase):
         self.assertEqual(d[1, 2][3], "A")
         self.assertEqual(d[1][2, 3], "A")
         self.assertEqual(d[[1, 2, 3]], "A")
-        
+
     def test_contains(self):
         d = DeepDict()
         d[[1, 2, 3]] = "A"
         self.assertTrue([1, 2, 3] in d)
-        
+
         with self.assertRaises(TypeError):
             [1, [2], 3] in d
-            
+
         @dataclass(frozen=False)
         class Point:
             x: int
             y: int
-            
+
         p1 = Point(1, 2)
         with self.assertRaises(TypeError):
             p1 in d

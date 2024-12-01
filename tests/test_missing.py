@@ -58,16 +58,16 @@ def test_missing_key_with_first_key_not_missing():
     result = dd.__missing__(missing_key)
     assert isinstance(result, DeepDict)
     assert "key1" in dd
-    assert  isinstance(dd["key1"], DeepDict)
+    assert isinstance(dd["key1"], DeepDict)
     assert "key2" in dd["key1"]
     assert dd["key1"]["key2"] is result
-    
+
 
 def test_missing_not_able_to_create_second_level():
     dd = DeepDict()
     dd["key1"] = "value1"
     missing_key = ("key1", "key2")
-    
+
     with pytest.raises(
         TypeError, match=f"The value of key '{missing_key[0]}' is not a DeepDict!"
     ):

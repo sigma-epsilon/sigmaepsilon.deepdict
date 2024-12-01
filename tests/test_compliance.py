@@ -9,7 +9,7 @@ class TestCompliance(unittest.TestCase):
 
     def test_dict_doesnt_have_missing_method(self):
         self.assertFalse(hasattr(dict, "__missing__"))
-    
+
     def test_set_and_get_item(self):
         # Test setting and getting items
         self.custom_dict["key1"] = "value1"
