@@ -89,16 +89,24 @@ class DeepDict(dict, Generic[_KT, _VT]):
     __slots__ = ["_parent", "_root", "_locked", "_key", "_name"]
 
     def __init__(self, *args, **kwargs):
-        for k, v in kwargs.items():
-            if isinstance(v, DeepDict):
-                v._parent = self
-                v._key = k
-        super().__init__(*args, **kwargs)
         self._parent = None
         self._root = None
         self._locked = None
         self._key = None
         self._name = None
+
+        for k, v in kwargs.items():
+            if isinstance(v, DeepDict):
+                v._parent = self
+                v._key = k
+
+        deepdict_kwargs = {k: v for k, v in kwargs.items() if isinstance(v, DeepDict)}
+        not_deepdict_kwargs = {
+            k: v for k, v in kwargs.items() if not isinstance(v, DeepDict)
+        }
+        super().__init__(*args, **not_deepdict_kwargs)
+        for k, v in deepdict_kwargs.items():
+            self[k] = v
 
     @property
     def parent(self: _DT) -> _DT | NoneType:
