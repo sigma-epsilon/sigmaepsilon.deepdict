@@ -86,19 +86,26 @@ class DeepDict(dict, Generic[_KT, _VT]):
 
     """
 
-    __slots__ = ["_parent", "_root", "_locked", "_key", "_name"]
+    __slots__ = ["_parent", "_locked", "_key", "_name"]
 
     def __init__(self, *args, **kwargs):
+        self._parent = None
+        self._locked = None
+        self._key = None
+        self._name = None
+
         for k, v in kwargs.items():
             if isinstance(v, DeepDict):
                 v._parent = self
                 v._key = k
-        super().__init__(*args, **kwargs)
-        self._parent = None
-        self._root = None
-        self._locked = None
-        self._key = None
-        self._name = None
+
+        deepdict_kwargs = {k: v for k, v in kwargs.items() if isinstance(v, DeepDict)}
+        not_deepdict_kwargs = {
+            k: v for k, v in kwargs.items() if not isinstance(v, DeepDict)
+        }
+        super().__init__(*args, **not_deepdict_kwargs)
+        for k, v in deepdict_kwargs.items():
+            self[k] = v
 
     @property
     def parent(self: _DT) -> _DT | NoneType:
@@ -115,10 +122,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
         if self.parent is None:
             return self
         else:
-            if self._root is not None:
-                return self._root
-            else:
-                return self.parent.root
+            return self.parent.root
 
     @property
     def name(self) -> str | NoneType:
@@ -264,6 +268,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
         >>> dd = DeepDict.wrap(d)
         >>> dd.is_leaf(), dd["a"].is_leaf()
         (False, True)
+
         """
         dtype = self.__class__ if dtype is None else dtype
         return not any(list([isinstance(v, dtype) for v in self.values()]))
@@ -327,6 +332,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
 
         >>> [c.key for c in data.containers(inclusive=False, deep=False)]
         ['a']
+
         """
         dtype = self.__class__ if dtype is None else dtype
         return parsedicts(self, inclusive=inclusive, dtype=dtype, deep=deep)
@@ -345,12 +351,18 @@ class DeepDict(dict, Generic[_KT, _VT]):
 
     def __delitem__(self, key: _KT) -> NoneType:
         if isinstance(key, Key):
+            d = self[key.wrapped]
             super().__delitem__(key.wrapped)
+            if isinstance(d, DeepDict):
+                d.__leave_parent__()
         elif issequence(key):
             parent = self.__getitem__(key[:-1])
             parent.__delitem__(key[-1])
         else:
+            d = self[key]
             super().__delitem__(key)
+            if isinstance(d, DeepDict):
+                d.__leave_parent__()
 
     def __setitem__(self, key: _KT, value: _VT) -> NoneType:
         try:
@@ -415,6 +427,9 @@ class DeepDict(dict, Generic[_KT, _VT]):
                 value = self[key[0]]
 
             if len(key) > 1:
+                if not isinstance(value, DeepDict):
+                    raise TypeError(f"The value of key '{key[0]}' is not a DeepDict!")
+
                 return value.__missing__(key[1:])
             else:
                 return value
@@ -450,12 +465,10 @@ class DeepDict(dict, Generic[_KT, _VT]):
 
     def __leave_parent__(self) -> NoneType:
         self._parent = None
-        self._root = None
         self._key = None
 
     def __join_parent__(self: _DT, parent: _DT, key: _KT | NoneType = None) -> NoneType:
         self._parent = parent
-        self._root = parent.root
         self._key = key
 
     def _items(

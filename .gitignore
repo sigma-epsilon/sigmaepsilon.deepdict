@@ -132,4 +132,4 @@ dmypy.json
 .vscode/settings.json
 
 # test files
-test*.*
+/test*.*
