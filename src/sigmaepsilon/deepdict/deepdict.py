@@ -86,11 +86,10 @@ class DeepDict(dict, Generic[_KT, _VT]):
 
     """
 
-    __slots__ = ["_parent", "_root", "_locked", "_key", "_name"]
+    __slots__ = ["_parent", "_locked", "_key", "_name"]
 
     def __init__(self, *args, **kwargs):
         self._parent = None
-        self._root = None
         self._locked = None
         self._key = None
         self._name = None
@@ -123,10 +122,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
         if self.parent is None:
             return self
         else:
-            if self._root is not None:
-                return self._root
-            else:
-                return self.parent.root
+            return self.parent.root
 
     @property
     def name(self) -> str | NoneType:
@@ -466,12 +462,10 @@ class DeepDict(dict, Generic[_KT, _VT]):
 
     def __leave_parent__(self) -> NoneType:
         self._parent = None
-        self._root = None
         self._key = None
 
     def __join_parent__(self: _DT, parent: _DT, key: _KT | NoneType = None) -> NoneType:
         self._parent = parent
-        self._root = parent.root
         self._key = key
 
     def _items(
