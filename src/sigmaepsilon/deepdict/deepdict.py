@@ -372,16 +372,11 @@ class DeepDict(dict, Generic[_KT, _VT]):
             if isinstance(value, DeepDict):
                 value.__join_parent__(self, key)
         else:
-            if not (key[0] in self):
-                host = self.__missing__(key[0])
-            else:
-                host = self[key[0]]
-
-            if len(key) > 1:
-                host.__setitem__(key[1:], value)
-            else:
-                self.__delitem__(key[0])
+            if len(key) == 1:
                 self.__setitem__(key[0], value)
+            else:
+                host = self.__missing__(key[0]) if key[0] not in self else self[key[0]]
+                host.__setitem__(key[1:], value)
 
     def __missing__(self: _DT, key: _KT, /) -> _DT:
         """
