@@ -23,6 +23,8 @@ class TestBehaviour(SigmaEpsilonTestCase):
         d[1, 2] = "A"
         self.assertTrue((1, 2) in d)
         d[1, 2] = None
+        self.assertTrue((1, 2) in d)
+        del d[1, 2]
         self.assertFalse((1, 2) in d)
 
     def test_behaviour_3(self):
