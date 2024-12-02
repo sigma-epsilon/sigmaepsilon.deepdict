@@ -12,6 +12,8 @@
 
 `sigmaepsilon.deepdict` is a lightweight Python library designed to handle nested dictionaries more easily, especially in cases where dictionaries are created dynamically. Its key feature is the `DeepDict` class, which extends the regular dict to support nested layouts. It allows easy manipulation of deeply nested structures, array-like indexing, and automatic creation of deep dictionary levels without manually defining all parent keys. It is particularly useful in scenarios involving hierarchical data. The library also supports printing dictionaries as trees.
 
+The first implementation of the `DeepDict` class was based on [this](http://stackoverflow.com/a/6190500/562769) StackOverflow thread.
+
 ## Highlights
 
 Consider the following simple dictionary
