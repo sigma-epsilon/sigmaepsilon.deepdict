@@ -1,4 +1,3 @@
-# http://stackoverflow.com/a/6190500/562769
 from typing import Hashable, Any, TypeVar, Generic, Generator
 from copy import copy as shallow_copy, deepcopy as deep_copy
 from types import NoneType
@@ -208,6 +207,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
 
         >>> list(DeepDict.wrap(d).items(deep=True))
         [('aa', 1), ('b', 2), ('ccc', 3)]
+
         """
         if copy and deepcopy:
             raise ValueError("Only one of 'copy' and 'deepcopy' can be True.")
@@ -337,92 +337,70 @@ class DeepDict(dict, Generic[_KT, _VT]):
         dtype = self.__class__ if dtype is None else dtype
         return parsedicts(self, inclusive=inclusive, dtype=dtype, deep=deep)
 
-    def __getitem__(self: _DT, key: _KT) -> _VT:
-        if isinstance(key, Key):
-            return super().__getitem__(key.wrapped)
-        elif issequence(key):
+    def __getitem__(self: _DT, key: _KT, /) -> _VT:
+        if isinstance(key, Key) or not issequence(key):
+            _key = key.wrapped if isinstance(key, Key) else key
+            return dict.__getitem__(self, _key)
+        else:
             item = self.__getitem__(key[0])
             if len(key) > 1:
                 return item.__getitem__(key[1:])
             else:
                 return item
-        else:
-            return super().__getitem__(key)
 
-    def __delitem__(self, key: _KT) -> NoneType:
-        if isinstance(key, Key):
-            d = self[key.wrapped]
-            super().__delitem__(key.wrapped)
+    def __delitem__(self, key: _KT, /) -> NoneType:
+        if isinstance(key, Key) or not issequence(key):
+            _key = key.wrapped if isinstance(key, Key) else key
+            d = self[_key]
+            dict.__delitem__(self, _key)
             if isinstance(d, DeepDict):
                 d.__leave_parent__()
-        elif issequence(key):
+        else:
             parent = self.__getitem__(key[:-1])
             parent.__delitem__(key[-1])
+
+    def __setitem__(self, key: _KT, value: _VT, /) -> NoneType:
+        if isinstance(key, Key) or not issequence(key):
+            if key in self:
+                self.__delitem__(key)
+            elif self.locked:
+                raise KeyError(f"Missing key '{key}' and the object is locked!")
+
+            _key = key.wrapped if isinstance(key, Key) else key
+            dict.__setitem__(self, _key, value)
+
+            if isinstance(value, DeepDict):
+                value.__join_parent__(self, key)
         else:
-            d = self[key]
-            super().__delitem__(key)
-            if isinstance(d, DeepDict):
-                d.__leave_parent__()
-
-    def __setitem__(self, key: _KT, value: _VT) -> NoneType:
-        try:
-            if isinstance(key, Key) or not issequence(key):
-                if key in self:
-                    d = self[key]
-                    if isinstance(d, DeepDict):
-                        d.__leave_parent__()
-                else:
-                    d = self.__missing__(key)
-
-                if value is None:
-                    if key in self:
-                        del self[key]
-                else:
-                    if isinstance(value, DeepDict):
-                        value.__join_parent__(self, key)
-
-                    if isinstance(key, Key):
-                        return super().__setitem__(key.wrapped, value)
-                    else:
-                        return super().__setitem__(key, value)
+            if not (key[0] in self):
+                host = self.__missing__(key[0])
             else:
-                if not key[0] in self:
-                    d = self.__missing__(key[0])
-                else:
-                    d = self[key[0]]
+                host = self[key[0]]
 
-                if len(key) > 1:
-                    d.__setitem__(key[1:], value)
-                else:
-                    d = self[key[0]]
-                    if isinstance(d, DeepDict):
-                        d.__leave_parent__()
+            if len(key) > 1:
+                host.__setitem__(key[1:], value)
+            else:
+                self.__delitem__(key[0])
+                self.__setitem__(key[0], value)
 
-                    if value is None:
-                        del self[key[0]]
-                    else:
-                        self[key[0]] = value
-
-        except KeyError:
-            return self.__missing__(key)
-
-    def __missing__(self: _DT, key: _KT) -> _DT:
+    def __missing__(self: _DT, key: _KT, /) -> _DT:
+        """
+        This is called when a value is about to be set and the key spans
+        multiple levels. It creates the missing levels and returns the
+        last level, so that the value can be set.
+        """
         if self.locked:
             raise KeyError(f"Missing key '{key}' and the object is locked!")
 
         if isinstance(key, Key) or not issequence(key):
             value = self.__class__()
-            value.__join_parent__(self, key)
-            if isinstance(key, Key):
-                super().__setitem__(key.wrapped, value)
-            else:
-                super().__setitem__(key, value)
+            _key = key.wrapped if isinstance(key, Key) else key
+            self[_key] = value
             return value
         elif issequence(key):
             if key[0] not in self:
                 value = self.__class__()
-                value.__join_parent__(self, key)
-                super().__setitem__(key[0], value)
+                self[key[0]] = value
             else:
                 value = self[key[0]]
 
@@ -434,7 +412,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
             else:
                 return value
 
-    def __contains__(self, item: Any) -> bool:
+    def __contains__(self, item: Any, /) -> bool:
         if isinstance(item, Key):
             return super().__contains__(item.wrapped)
         elif issequence(item):
@@ -462,14 +440,6 @@ class DeepDict(dict, Generic[_KT, _VT]):
     def __repr__(self) -> str:
         frmtstr = self.__class__.__name__ + "(%s)"
         return frmtstr % (dict.__repr__(self))
-
-    def __leave_parent__(self) -> NoneType:
-        self._parent = None
-        self._key = None
-
-    def __join_parent__(self: _DT, parent: _DT, key: _KT | NoneType = None) -> NoneType:
-        self._parent = parent
-        self._key = key
 
     def _items(
         self: _DT, *, deep: bool = False, return_address: bool = False
@@ -592,3 +562,11 @@ class DeepDict(dict, Generic[_KT, _VT]):
         else:
             for k in super().keys():
                 yield k
+
+    def __leave_parent__(self) -> NoneType:
+        self._parent = None
+        self._key = None
+
+    def __join_parent__(self: _DT, parent: _DT, key: _KT | NoneType = None) -> NoneType:
+        self._parent = parent
+        self._key = key
