@@ -6,6 +6,7 @@ from sigmaepsilon.core.typing import issequence
 from sigmaepsilon.core import Wrapper
 
 from .utils import dictparser, parseitems, parsedicts, _wrap
+import warnings
 
 
 __all__ = ["DeepDict", "Key", "Value"]
@@ -351,10 +352,13 @@ class DeepDict(dict, Generic[_KT, _VT]):
     def __delitem__(self, key: _KT, /) -> NoneType:
         if isinstance(key, Key) or not issequence(key):
             _key = key.wrapped if isinstance(key, Key) else key
-            d = self[_key]
+            value = self[_key]
+            value_is_DeepDict = isinstance(value, DeepDict)
+            if value_is_DeepDict:
+                value.__before_leave_parent__()
             dict.__delitem__(self, _key)
-            if isinstance(d, DeepDict):
-                d.__leave_parent__()
+            if value_is_DeepDict:
+                value.__after_leave_parent__()
         else:
             parent = self.__getitem__(key[:-1])
             parent.__delitem__(key[-1])
@@ -366,11 +370,14 @@ class DeepDict(dict, Generic[_KT, _VT]):
             elif self.locked:
                 raise KeyError(f"Missing key '{key}' and the object is locked!")
 
+            value_is_DeepDict = isinstance(value, DeepDict)
+
+            if value_is_DeepDict:
+                value.__before_join_parent__(self, key)
             _key = key.wrapped if isinstance(key, Key) else key
             dict.__setitem__(self, _key, value)
-
-            if isinstance(value, DeepDict):
-                value.__join_parent__(self, key)
+            if value_is_DeepDict:
+                value.__after_join_parent__(self, key)
         else:
             if len(key) == 1:
                 self.__setitem__(key[0], value)
@@ -558,10 +565,36 @@ class DeepDict(dict, Generic[_KT, _VT]):
             for k in super().keys():
                 yield k
 
-    def __leave_parent__(self) -> NoneType:
+    def __before_join_parent__(
+        self: _DT, parent: _DT, key: _KT | NoneType = None
+    ) -> NoneType: ...
+
+    def __after_join_parent__(
+        self: _DT, parent: _DT, key: _KT | NoneType = None
+    ) -> NoneType:
+        self._parent = parent
+        self._key = key
+
+    def __before_leave_parent__(self) -> NoneType: ...
+
+    def __after_leave_parent__(self) -> NoneType:
         self._parent = None
         self._key = None
 
+    def __leave_parent__(self) -> NoneType:
+        warnings.warn(
+            "The __leave_parent__ method is deprecated. "
+            "Please consult the documentation and use the "
+            "__before_leave_parent__ and __after_leave_parent__ methods instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
     def __join_parent__(self: _DT, parent: _DT, key: _KT | NoneType = None) -> NoneType:
-        self._parent = parent
-        self._key = key
+        warnings.warn(
+            "The __join_parent__ method is deprecated. "
+            "Please consult the documentation and use the "
+            "__before_join_parent__ and __after_join_parent__ methods instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
