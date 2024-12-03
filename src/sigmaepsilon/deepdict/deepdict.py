@@ -1,4 +1,4 @@
-from typing import Hashable, Any, TypeVar, Generic, Generator
+from typing import Hashable, Any, TypeVar, Generic, Iterator
 from copy import copy as shallow_copy, deepcopy as deep_copy
 from types import NoneType
 
@@ -280,7 +280,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
         inclusive: bool = False,
         deep: bool = True,
         dtype: Any = None,
-    ) -> Generator[_DT, None, None]:
+    ) -> Iterator[_DT]:
         """
         Returns all the containers in a nested layout. A dictionary in a nested layout
         is called a container, only if it contains other containers (it is a parent).
@@ -445,7 +445,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
 
     def _items(
         self: _DT, *, deep: bool = False, return_address: bool = False
-    ) -> Generator[tuple[_KT, _DT | _VT], None, None]:
+    ) -> Iterator[tuple[_KT, _DT | _VT]]:
         if deep:
             if return_address:
                 for addr, v in dictparser(self):
@@ -463,7 +463,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
         deep: bool = False,
         return_address: bool = False,
         vtype: type = Any,
-    ) -> Generator[tuple[_KT, _DT | _VT], None, None]:
+    ) -> Iterator[tuple[_KT, _DT | _VT]]:
         """
         Returns the items. When called without arguments, it works the same as for
         standard dictionaries.
@@ -491,7 +491,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
 
     def _values(
         self: _DT, *, deep: bool = False, return_address: bool = False
-    ) -> Generator[_DT | _VT, None, None]:
+    ) -> Iterator[_DT | _VT]:
         if deep:
             if return_address:
                 for addr, v in dictparser(self):
@@ -509,7 +509,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
         deep: bool = False,
         return_address: bool = False,
         vtype: _VT1 = Any,
-    ) -> Generator[_DT | _VT | _VT1, None, None]:
+    ) -> Iterator[_DT | _VT | _VT1]:
         """
         Returns the values. When called without arguments, it works the same as for
         standard dictionaries.
@@ -538,7 +538,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
         *,
         deep: bool = False,
         return_address: bool = False,
-    ) -> Generator[_KT, None, None]:
+    ) -> Iterator[_KT]:
         """
         Returns the keys. When called without arguments, it works the same as for
         standard dictionaries.
