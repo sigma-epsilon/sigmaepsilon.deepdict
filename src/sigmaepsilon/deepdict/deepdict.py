@@ -1,12 +1,12 @@
 from typing import Hashable, Any, TypeVar, Generic, Iterator
 from copy import copy as shallow_copy, deepcopy as deep_copy
 from types import NoneType
+import warnings
 
 from sigmaepsilon.core.typing import issequence
 from sigmaepsilon.core import Wrapper
 
 from .utils import dictparser, parseitems, parsedicts, _wrap
-import warnings
 
 
 __all__ = ["DeepDict", "Key", "Value"]
