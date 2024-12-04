@@ -11,20 +11,26 @@ Additionally, this changelog includes a "Refactored" section for changes that do
 
 ### Changed
 
-The following behavior has been changed:
+- The behaviour when assigning a `None` value to a key has been changed:
 
-```python
-from sigmaepsilon.deepdict import DeepDict
-dd = DeepDict()
-dd["key"] = "value"
-dd["key"] = None
-```
+  ```python
+  from sigmaepsilon.deepdict import DeepDict
+  dd = DeepDict()
+  dd["key"] = "value"
+  dd["key"] = None
+  ```
 
-Previously, this would delete the key from the dictionary, which was inconsistent with the behavior of the built-in `dict` class. Starting from this version, the last line will only set the value to `None` without deleting the key. To delete the key, you should now use:
+  Previously, this would delete the key from the dictionary, which was inconsistent with the behavior of the built-in `dict` class. Starting from this version, the last line will only set the value to `None` without deleting the key. To delete the key, you should now use:
 
-```python
-del dd["key"]
-```
+  ```python
+  del dd["key"]
+  ```
+
+- Customizing the behaviour upon deleting a DeepDict from its parent and adding a child DeepDict has been changed, see the notes at the 'Deprecated' section.
+
+### Deprecated
+
+The use of the hooks `__leave_parent__` and `__join_parent__` is deprecated. They are replaced with `__before_join_parent__`, `__after_join_parent__`, `__before_leave_parent__` and `__after_leave_parent__`, which provides more fine grained control. See the documentation for more details.
 
 ### Refactored
 
