@@ -5,10 +5,12 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/077f95d06b9d4ee88395d5c088e4496a)](https://app.codacy.com/gh/sigma-epsilon/sigmaepsilon.deepdict/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Documentation Status](https://readthedocs.org/projects/sigmaepsilondeepdict/badge/?version=latest)](https://sigmaepsilondeepdict.readthedocs.io/en/latest/?badge=latest)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![PyPI](https://badge.fury.io/py/sigmaepsilon.deepdict.svg)](https://pypi.org/project/sigmaepsilon.deepdict)
-[![Python](https://img.shields.io/badge/python-3.10|3.11|3.12-blue)](https://www.python.org)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/sigmaepsilon.deepdict)](https://pypi.org/project/sigmaepsilon.deepdict)
+[![PyPI - Version](https://img.shields.io/pypi/v/sigmaepsilon.deepdict)](https://pypi.org/project/sigmaepsilon.deepdict)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/sigmaepsilon.deepdict)](https://www.python.org)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Requirements Status](https://dependency-dash.repo-helper.uk/github/sigma-epsilon/sigmaepsilon.deepdict/badge.svg)](https://dependency-dash.repo-helper.uk/github/sigma-epsilon/sigmaepsilon.deepdict)
+[![Static Badge](https://img.shields.io/badge/versioning-semver-orange)](https://semver.org/)
 
 `sigmaepsilon.deepdict` is a lightweight Python library designed to handle nested dictionaries more easily, especially in cases where dictionaries are created dynamically. Its key feature is the `DeepDict` class, which extends the regular dict to support nested layouts. It allows easy manipulation of deeply nested structures, array-like indexing, and automatic creation of deep dictionary levels without manually defining all parent keys. It is particularly useful in scenarios involving hierarchical data. The library also supports printing dictionaries as trees.
 
@@ -92,7 +94,7 @@ The [documentation](https://sigmaepsilondeepdict.readthedocs.io/en/latest/) is b
 
 ## **Installation**
 
-The library can be installed from PyPI using `pip` on Python >= 3.10:
+The library can be installed from PyPI using `pip` on supported Python versions:
 
 ```console
 >>> pip install sigmaepsilon.deepdict
