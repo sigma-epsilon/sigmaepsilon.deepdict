@@ -48,11 +48,7 @@ The [documentation](https://sigmaepsilondeepdict.readthedocs.io/en/latest/) is b
 
 ## **Installation**
 
-The library can be installed from PyPI using `pip` on supported Python versions:
-
-```console
-pip install sigmaepsilon.deepdict
-```
+For installation instructions, please refer to the [documentation](https://sigmaepsilondeepdict.readthedocs.io/en/latest/).
 
 ## **License**
 
