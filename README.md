@@ -97,7 +97,7 @@ The [documentation](https://sigmaepsilondeepdict.readthedocs.io/en/latest/) is b
 The library can be installed from PyPI using `pip` on supported Python versions:
 
 ```console
->>> pip install sigmaepsilon.deepdict
+pip install sigmaepsilon.deepdict
 ```
 
 ## **License**
