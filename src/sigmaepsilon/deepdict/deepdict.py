@@ -567,7 +567,8 @@ class DeepDict(dict, Generic[_KT, _VT]):
 
     def __before_join_parent__(
         self: _DT, parent: _DT, key: _KT | NoneType = None
-    ) -> NoneType: ...
+    ) -> NoneType:
+        pass
 
     def __after_join_parent__(
         self: _DT, parent: _DT, key: _KT | NoneType = None
@@ -575,7 +576,8 @@ class DeepDict(dict, Generic[_KT, _VT]):
         self._parent = parent
         self._key = key
 
-    def __before_leave_parent__(self) -> NoneType: ...
+    def __before_leave_parent__(self) -> NoneType:
+        pass
 
     def __after_leave_parent__(self) -> NoneType:
         self._parent = None
