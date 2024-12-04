@@ -1,0 +1,6 @@
+- **Simplified Management of Nested Dictionaries**: Easily create, access, and manipulate deeply nested structures.
+- **Automatic Level Creation**: No need to predefine parent keys; nested levels are created dynamically.
+- **Parent-Child Awareness**: Navigate the dictionary with attributes like `key`, `address`, and `parent`.
+- **Tree Representation**: Visualize nested data as trees using optional tools like `asciitree`.
+- **Pythonic Syntax**: Use array-like indexing for intuitive interactions with data.
+- **Lightweight and Flexible**: Designed for simplicity and maintainability in Python projects.
