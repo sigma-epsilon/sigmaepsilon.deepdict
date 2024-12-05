@@ -571,7 +571,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
         self: _DT, parent: _DT, key: _KT | NoneType = None
     ) -> NoneType:
         """Actions to be taken before joining a parent."""
-        pass
+        ...
 
     def __after_join_parent__(
         self: _DT, parent: _DT, key: _KT | NoneType = None
@@ -589,7 +589,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
 
     def __before_leave_parent__(self) -> NoneType:
         """Actions to be taken before leaving a parent."""
-        pass
+        ...
 
     def __after_leave_parent__(self) -> NoneType:
         """
