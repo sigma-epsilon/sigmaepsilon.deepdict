@@ -37,10 +37,12 @@ Highlights
 
 Projects using SigmaEpsilon.DeepDict
 ====================================
-The following projects all build on the :ref:`DeepDict` class:
+The following projects all build on the :class:`~sigmaepsilon.deepdict.deepdict.DeepDict` class:
 
 - `SigmaEpsilon.Mesh <https://github.com/sigma-epsilon/sigmaepsilon.mesh>`__
-   The `PolyData` class and other mesh data container classes are subclasses of :ref:`DeepDict`.
+   The :class:`~sigmaepsilon.mesh.data.polydata.PolyData` class and other mesh data container classes are subclasses of :class:`~sigmaepsilon.deepdict.deepdict.DeepDict`.
+- `SigmaEpsilon.Solid.Fourier <https://github.com/sigma-epsilon/sigmaepsilon.solid.fourier>`__
+   The :class:`~sigmaepsilon.solid.fourier.loads.loads.LoadGroup` class is a subclass of :class:`~sigmaepsilon.deepdict.deepdict.DeepDict`.
 
 .. note::
    If you are using this library and you want your project to be listed here, get in contact
