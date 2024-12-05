@@ -417,6 +417,8 @@ class DeepDict(dict, Generic[_KT, _VT]):
     def __contains__(self, item: Any, /) -> bool:
         if isinstance(item, Key):
             return super().__contains__(item.wrapped)
+        elif isinstance(item, DeepDict):
+            return (not item.is_root()) and (item.parent is self)
         elif issequence(item):
             if len(item) == 0:
                 raise ValueError(f"{item} has zero length")
@@ -568,18 +570,36 @@ class DeepDict(dict, Generic[_KT, _VT]):
     def __before_join_parent__(
         self: _DT, parent: _DT, key: _KT | NoneType = None
     ) -> NoneType:
+        """Actions to be taken before joining a parent."""
         pass
 
     def __after_join_parent__(
         self: _DT, parent: _DT, key: _KT | NoneType = None
     ) -> NoneType:
+        """
+        Actions to be taken after joining a parent.
+
+        .. note::
+           If you implement this method, don't forget to call
+           `super().__after_join_parent__()` as well.
+
+        """
         self._parent = parent
         self._key = key
 
     def __before_leave_parent__(self) -> NoneType:
+        """Actions to be taken before leaving a parent."""
         pass
 
     def __after_leave_parent__(self) -> NoneType:
+        """
+        Actions to be taken after leaving a parent.
+
+        .. note::
+           If you implement this method, don't forget to call
+           `super().__after_leave_parent__()` as well.
+
+        """
         self._parent = None
         self._key = None
 
