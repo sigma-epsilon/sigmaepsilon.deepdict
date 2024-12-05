@@ -171,6 +171,13 @@ class TestBehaviour(SigmaEpsilonTestCase):
         p1 = Point(1, 2)
         with self.assertRaises(TypeError):
             p1 in d
+            
+        d = DeepDict()
+        dd = DeepDict()
+        ddd = DeepDict()
+        d["A"] = dd
+        self.assertTrue(dd in d)
+        self.assertFalse(ddd in d)
 
 
 if __name__ == "__main__":
