@@ -30,42 +30,27 @@ sys.path.insert(0, os.path.abspath("../../src"))
 project = library.__pkg_name__
 copyright = "2014-%s, Bence Balogh" % date.today().year
 author = "Bence Balogh"
+version = library.__version__
+release = "v" + library.__version__
 
 
 def setup(app: Config):
     app.add_config_value("project_name", project, "html")
 
 
-# The short X.Y version.
-version = library.__version__
-# The full version, including alpha/beta/rc tags.
-release = "v" + library.__version__
-
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    # allows to work with markdown files
-    "myst_parser",  # pip install myst-parser for this
-    # to plot summary about durations of file generations
-    "sphinx.ext.duration",
-    # to test code snippets in docstrings
-    "sphinx.ext.doctest",
-    # for automatic exploration of the source files
-    "sphinx.ext.autodoc",
-    # to enable cross referencing other documents on the internet
-    "sphinx.ext.intersphinx",
-    # Napoleon is a extension that enables Sphinx to parse both NumPy and Google style docstrings
-    "sphinx.ext.napoleon",
-    #'sphinx_gallery.gen_gallery',
-    #'sphinx_gallery.load_style',  # load CSS for gallery (needs SG >= 0.6)
+    "myst_parser",  # allows to work with markdown files
+    "sphinx.ext.duration",  # to plot summary about durations of file generations
+    "sphinx.ext.doctest",  # to test code snippets in docstrings
+    "sphinx.ext.autodoc",  # for automatic exploration of the source files
+    "sphinx.ext.intersphinx",  # to enable cross referencing other documents on the internet
+    "sphinx.ext.napoleon",  # enables Sphinx to parse both NumPy and Google style docstrings
     "nbsphinx",  # to handle jupyter notebooks
-    # "nbsphinx_link",  # for including notebook files from outside the sphinx source root
     "sphinx_copybutton",  # for "copy to clipboard" buttons
-    #"sphinx.ext.mathjax",  # for math equations
-    #"sphinxcontrib.bibtex",  # for bibliographic references
-    #"sphinxcontrib.rsvgconverter",  # for SVG->PDF conversion in LaTeX output
-    #"sphinx.ext.viewcode",
+    "sphinx.ext.viewcode",
     "sphinx.ext.autosummary",
     "sphinx.ext.doctest",
     "sphinx.ext.todo",
@@ -99,7 +84,9 @@ nitpick_ignore = [
     ("", "Pygments lexer name 'ipython3' is not known"),
 ]
 
-# The name of the Pygments (syntax highlighting) style to use.
+# Pygments
+pygments_style = "sphinx"
+pygments_dark_style = "github-dark"
 highlight_language = "python3"
 
 intersphinx_mapping = {
@@ -110,8 +97,23 @@ intersphinx_mapping = {
     "sphinx": (r"https://www.sphinx-doc.org/en/master", None),
     "pandas": (r"https://pandas.pydata.org/pandas-docs/stable/", None),
     "sigmaepsilon.core": (r"https://sigmaepsiloncore.readthedocs.io/en/latest/", None),
-    "sigmaepsilon.math": (r"https://sigmaepsilonmath.readthedocs.io/en/latest/", None),
+    "sigmaepsilon.mesh": (r"https://sigmaepsilonmesh.readthedocs.io/en/latest/", None),
+    "sigmaepsilon.solid.fourier": (r"https://sigmaepsilonsolidfourier.readthedocs.io/en/latest/", None),
 }
+
+# sphinx_copybutton configuration --------------------------------------------
+
+copybutton_exclude = '.linenos, .gp, .go'
+copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
+copybutton_prompt_is_regexp = True
+copybutton_only_copy_prompt_lines = True
+
+# napoleon config ---------------------------------------------------------
+
+napoleon_numpy_docstring = True
+napoleon_include_init_with_doc = True
+napoleon_use_admonition_for_examples = True
+napoleon_use_ivar = True
 
 # -- bibtex configuration -------------------------------------------------
 # https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html
@@ -126,7 +128,6 @@ bibtex_default_style = "unsrt"
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "pydata_sphinx_theme"
-
 html_theme_options = {
     "show_prev_next": True,
     "back_to_top_button": True,
@@ -148,17 +149,13 @@ html_theme_options = {
         # Because the logo is also a homepage link, including "home" in the alt text is good practice
         "text": "SigmaEpsilon.DeepDict",
     },
-    "pygments_light_style": "tango",
-    "pygments_dark_style": "github-dark",
 }
-
-html_context = {
-   "default_mode": "light"
-}
-
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
+html_js_files = [
+    "require.min.js",
+    "custom.js",
+]
+html_css_files = ["custom.css"]
+html_context = {"default_mode": "light"}
 html_static_path = ["_static"]
 
 # -- nbsphinx configuration -------------------------------------------------
@@ -168,6 +165,13 @@ nbsphinx_prolog = r"""
 {% set docname = "docs\\source\\" + env.doc2path(env.docname, base=None) %}
 
 .. raw:: html
+
+    <style>
+        .nbinput .prompt,
+        .nboutput .prompt {
+            display: none;
+        }
+    </style>
 
     <div class="admonition note">
       This page was generated from
