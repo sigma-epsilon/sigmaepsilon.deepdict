@@ -3,11 +3,10 @@ from copy import copy as shallow_copy, deepcopy as deep_copy
 from types import NoneType
 import warnings
 
-from sigmaepsilon.core.typing import issequence
 from sigmaepsilon.core import Wrapper
 
-from .utils import dictparser, parseitems, parsedicts, _wrap
-
+from .utils import dictparser, parseitems, parsedicts, _wrap, _issequence
+from .exceptions import DeepDictLockedError
 
 __all__ = ["DeepDict", "Key", "Value"]
 
@@ -339,7 +338,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
         return parsedicts(self, inclusive=inclusive, dtype=dtype, deep=deep)
 
     def __getitem__(self: _DT, key: _KT, /) -> _VT:
-        if isinstance(key, Key) or not issequence(key):
+        if isinstance(key, Key) or not _issequence(key):
             _key = key.wrapped if isinstance(key, Key) else key
             return dict.__getitem__(self, _key)
         else:
@@ -350,12 +349,14 @@ class DeepDict(dict, Generic[_KT, _VT]):
                 return item
 
     def __delitem__(self, key: _KT, /) -> NoneType:
-        if isinstance(key, Key) or not issequence(key):
+        if isinstance(key, Key) or not _issequence(key):
             _key = key.wrapped if isinstance(key, Key) else key
             value = self[_key]
             value_is_DeepDict = isinstance(value, DeepDict)
             if value_is_DeepDict:
                 value.__before_leave_parent__()
+            if self.locked:
+                raise DeepDictLockedError()
             dict.__delitem__(self, _key)
             if value_is_DeepDict:
                 value.__after_leave_parent__()
@@ -364,26 +365,31 @@ class DeepDict(dict, Generic[_KT, _VT]):
             parent.__delitem__(key[-1])
 
     def __setitem__(self, key: _KT, value: _VT, /) -> NoneType:
-        if isinstance(key, Key) or not issequence(key):
+        if isinstance(key, Key) or not _issequence(key):
+            _key = key.wrapped if isinstance(key, Key) else key
+            if not isinstance(_key, Hashable):
+                raise TypeError(f"Invalid key type: {type(_key)}")
+
             if key in self:
                 self.__delitem__(key)
             elif self.locked:
-                raise KeyError(f"Missing key '{key}' and the object is locked!")
+                raise DeepDictLockedError(f"Missing key '{key}' and the object is locked!")
 
             value_is_DeepDict = isinstance(value, DeepDict)
 
             if value_is_DeepDict:
                 value.__before_join_parent__(self, key)
-            _key = key.wrapped if isinstance(key, Key) else key
             dict.__setitem__(self, _key, value)
             if value_is_DeepDict:
                 value.__after_join_parent__(self, key)
-        else:
+        elif _issequence(key):
             if len(key) == 1:
                 self.__setitem__(key[0], value)
             else:
                 host = self.__missing__(key[0]) if key[0] not in self else self[key[0]]
                 host.__setitem__(key[1:], value)
+        else:  # pragma: no cover
+            raise TypeError(f"Invalid key type: {type(key)}")
 
     def __missing__(self: _DT, key: _KT, /) -> _DT:
         """
@@ -392,14 +398,14 @@ class DeepDict(dict, Generic[_KT, _VT]):
         last level, so that the value can be set.
         """
         if self.locked:
-            raise KeyError(f"Missing key '{key}' and the object is locked!")
+            raise DeepDictLockedError(f"Missing key '{key}' and the object is locked!")
 
-        if isinstance(key, Key) or not issequence(key):
+        if isinstance(key, Key) or not _issequence(key):
             value = self.__class__()
             _key = key.wrapped if isinstance(key, Key) else key
             self[_key] = value
             return value
-        elif issequence(key):
+        elif _issequence(key):
             if key[0] not in self:
                 value = self.__class__()
                 self[key[0]] = value
@@ -419,7 +425,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
             return super().__contains__(item.wrapped)
         elif isinstance(item, DeepDict):
             return (not item.is_root()) and (item.parent is self)
-        elif issequence(item):
+        elif _issequence(item):
             if len(item) == 0:
                 raise ValueError(f"{item} has zero length")
             else:
