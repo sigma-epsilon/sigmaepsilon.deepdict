@@ -24,6 +24,10 @@ __all__ = ["dictparser", "parseaddress", "parseitems", "parsedicts", "parsedicts
 DictLike = TypeVar("DictLike", bound=dict)
 
 
+def _issequence(item: Any) -> bool:
+    return isinstance(item, (list, tuple))
+
+
 def dictparser(d: dict, *, dtype=dict, **_kw) -> Iterable[Tuple[List[Hashable], Any]]:
     """
     Iterates through all the values of a nested dictionary.
