@@ -28,10 +28,10 @@ class TestDelitem(unittest.TestCase):
         counter = 0
 
         class MyDeepDict(DeepDict):
-            def __leave_parent__(self) -> None:
+            def __after_leave_parent__(self) -> None:
                 nonlocal counter
                 counter += 1
-                return super().__leave_parent__()
+                return super().__after_leave_parent__()
 
         dd = MyDeepDict()
         dd["A"] = MyDeepDict()
@@ -43,10 +43,10 @@ class TestDelitem(unittest.TestCase):
         counter = 0
 
         class MyDeepDict(DeepDict):
-            def __leave_parent__(self) -> None:
+            def __after_leave_parent__(self) -> None:
                 nonlocal counter
                 counter += 1
-                return super().__leave_parent__()
+                return super().__after_leave_parent__()
 
         dd = MyDeepDict()
         dd["A", "B"] = MyDeepDict()
@@ -59,10 +59,10 @@ class TestDelitem(unittest.TestCase):
         counter = 0
 
         class MyDeepDict(DeepDict):
-            def __leave_parent__(self) -> None:
+            def __after_leave_parent__(self) -> None:
                 nonlocal counter
                 counter += 1
-                return super().__leave_parent__()
+                return super().__after_leave_parent__()
 
         dd = MyDeepDict()
         dd[Key((1, 2))] = MyDeepDict()

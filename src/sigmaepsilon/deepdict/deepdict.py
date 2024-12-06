@@ -1,13 +1,12 @@
-# http://stackoverflow.com/a/6190500/562769
-from typing import Hashable, Any, TypeVar, Generic, Generator
+from typing import Hashable, Any, TypeVar, Generic, Iterator
 from copy import copy as shallow_copy, deepcopy as deep_copy
 from types import NoneType
+import warnings
 
-from sigmaepsilon.core.typing import issequence
 from sigmaepsilon.core import Wrapper
 
-from .utils import dictparser, parseitems, parsedicts, _wrap
-
+from .utils import dictparser, parseitems, parsedicts, _wrap, _issequence
+from .exceptions import DeepDictLockedError
 
 __all__ = ["DeepDict", "Key", "Value"]
 
@@ -208,6 +207,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
 
         >>> list(DeepDict.wrap(d).items(deep=True))
         [('aa', 1), ('b', 2), ('ccc', 3)]
+
         """
         if copy and deepcopy:
             raise ValueError("Only one of 'copy' and 'deepcopy' can be True.")
@@ -279,7 +279,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
         inclusive: bool = False,
         deep: bool = True,
         dtype: Any = None,
-    ) -> Generator[_DT, None, None]:
+    ) -> Iterator[_DT]:
         """
         Returns all the containers in a nested layout. A dictionary in a nested layout
         is called a container, only if it contains other containers (it is a parent).
@@ -337,92 +337,78 @@ class DeepDict(dict, Generic[_KT, _VT]):
         dtype = self.__class__ if dtype is None else dtype
         return parsedicts(self, inclusive=inclusive, dtype=dtype, deep=deep)
 
-    def __getitem__(self: _DT, key: _KT) -> _VT:
-        if isinstance(key, Key):
-            return super().__getitem__(key.wrapped)
-        elif issequence(key):
+    def __getitem__(self: _DT, key: _KT, /) -> _VT:
+        if isinstance(key, Key) or not _issequence(key):
+            _key = key.wrapped if isinstance(key, Key) else key
+            return dict.__getitem__(self, _key)
+        else:
             item = self.__getitem__(key[0])
             if len(key) > 1:
                 return item.__getitem__(key[1:])
             else:
                 return item
-        else:
-            return super().__getitem__(key)
 
-    def __delitem__(self, key: _KT) -> NoneType:
-        if isinstance(key, Key):
-            d = self[key.wrapped]
-            super().__delitem__(key.wrapped)
-            if isinstance(d, DeepDict):
-                d.__leave_parent__()
-        elif issequence(key):
+    def __delitem__(self, key: _KT, /) -> NoneType:
+        if isinstance(key, Key) or not _issequence(key):
+            _key = key.wrapped if isinstance(key, Key) else key
+            value = self[_key]
+            value_is_DeepDict = isinstance(value, DeepDict)
+            if value_is_DeepDict:
+                value.__before_leave_parent__()
+            if self.locked:
+                raise DeepDictLockedError()
+            dict.__delitem__(self, _key)
+            if value_is_DeepDict:
+                value.__after_leave_parent__()
+        else:
             parent = self.__getitem__(key[:-1])
             parent.__delitem__(key[-1])
-        else:
-            d = self[key]
-            super().__delitem__(key)
-            if isinstance(d, DeepDict):
-                d.__leave_parent__()
 
-    def __setitem__(self, key: _KT, value: _VT) -> NoneType:
-        try:
-            if isinstance(key, Key) or not issequence(key):
-                if key in self:
-                    d = self[key]
-                    if isinstance(d, DeepDict):
-                        d.__leave_parent__()
-                else:
-                    d = self.__missing__(key)
+    def __setitem__(self, key: _KT, value: _VT, /) -> NoneType:
+        if isinstance(key, Key) or not _issequence(key):
+            _key = key.wrapped if isinstance(key, Key) else key
+            if not isinstance(_key, Hashable):
+                raise TypeError(f"Invalid key type: {type(_key)}")
 
-                if value is None:
-                    if key in self:
-                        del self[key]
-                else:
-                    if isinstance(value, DeepDict):
-                        value.__join_parent__(self, key)
+            if key in self:
+                self.__delitem__(key)
+            elif self.locked:
+                raise DeepDictLockedError(f"Missing key '{key}' and the object is locked!")
 
-                    if isinstance(key, Key):
-                        return super().__setitem__(key.wrapped, value)
-                    else:
-                        return super().__setitem__(key, value)
+            value_is_DeepDict = isinstance(value, DeepDict)
+
+            if value_is_DeepDict:
+                value.__before_join_parent__(self, key)
+            dict.__setitem__(self, _key, value)
+            if value_is_DeepDict:
+                value.__after_join_parent__(self, key)
+        elif _issequence(key):
+            if len(key) == 1:
+                self.__setitem__(key[0], value)
             else:
-                if not key[0] in self:
-                    d = self.__missing__(key[0])
-                else:
-                    d = self[key[0]]
+                host = self.__missing__(key[0]) if key[0] not in self else self[key[0]]
+                host.__setitem__(key[1:], value)
+        else:  # pragma: no cover
+            raise TypeError(f"Invalid key type: {type(key)}")
 
-                if len(key) > 1:
-                    d.__setitem__(key[1:], value)
-                else:
-                    d = self[key[0]]
-                    if isinstance(d, DeepDict):
-                        d.__leave_parent__()
-
-                    if value is None:
-                        del self[key[0]]
-                    else:
-                        self[key[0]] = value
-
-        except KeyError:
-            return self.__missing__(key)
-
-    def __missing__(self: _DT, key: _KT) -> _DT:
+    def __missing__(self: _DT, key: _KT, /) -> _DT:
+        """
+        This is called when a value is about to be set and the key spans
+        multiple levels. It creates the missing levels and returns the
+        last level, so that the value can be set.
+        """
         if self.locked:
-            raise KeyError(f"Missing key '{key}' and the object is locked!")
+            raise DeepDictLockedError(f"Missing key '{key}' and the object is locked!")
 
-        if isinstance(key, Key) or not issequence(key):
+        if isinstance(key, Key) or not _issequence(key):
             value = self.__class__()
-            value.__join_parent__(self, key)
-            if isinstance(key, Key):
-                super().__setitem__(key.wrapped, value)
-            else:
-                super().__setitem__(key, value)
+            _key = key.wrapped if isinstance(key, Key) else key
+            self[_key] = value
             return value
-        elif issequence(key):
+        elif _issequence(key):
             if key[0] not in self:
                 value = self.__class__()
-                value.__join_parent__(self, key)
-                super().__setitem__(key[0], value)
+                self[key[0]] = value
             else:
                 value = self[key[0]]
 
@@ -434,10 +420,12 @@ class DeepDict(dict, Generic[_KT, _VT]):
             else:
                 return value
 
-    def __contains__(self, item: Any) -> bool:
+    def __contains__(self, item: Any, /) -> bool:
         if isinstance(item, Key):
             return super().__contains__(item.wrapped)
-        elif issequence(item):
+        elif isinstance(item, DeepDict):
+            return (not item.is_root()) and (item.parent is self)
+        elif _issequence(item):
             if len(item) == 0:
                 raise ValueError(f"{item} has zero length")
             else:
@@ -463,17 +451,9 @@ class DeepDict(dict, Generic[_KT, _VT]):
         frmtstr = self.__class__.__name__ + "(%s)"
         return frmtstr % (dict.__repr__(self))
 
-    def __leave_parent__(self) -> NoneType:
-        self._parent = None
-        self._key = None
-
-    def __join_parent__(self: _DT, parent: _DT, key: _KT | NoneType = None) -> NoneType:
-        self._parent = parent
-        self._key = key
-
     def _items(
         self: _DT, *, deep: bool = False, return_address: bool = False
-    ) -> Generator[tuple[_KT, _DT | _VT], None, None]:
+    ) -> Iterator[tuple[_KT, _DT | _VT]]:
         if deep:
             if return_address:
                 for addr, v in dictparser(self):
@@ -491,7 +471,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
         deep: bool = False,
         return_address: bool = False,
         vtype: type = Any,
-    ) -> Generator[tuple[_KT, _DT | _VT], None, None]:
+    ) -> Iterator[tuple[_KT, _DT | _VT]]:
         """
         Returns the items. When called without arguments, it works the same as for
         standard dictionaries.
@@ -519,7 +499,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
 
     def _values(
         self: _DT, *, deep: bool = False, return_address: bool = False
-    ) -> Generator[_DT | _VT, None, None]:
+    ) -> Iterator[_DT | _VT]:
         if deep:
             if return_address:
                 for addr, v in dictparser(self):
@@ -537,7 +517,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
         deep: bool = False,
         return_address: bool = False,
         vtype: _VT1 = Any,
-    ) -> Generator[_DT | _VT | _VT1, None, None]:
+    ) -> Iterator[_DT | _VT | _VT1]:
         """
         Returns the values. When called without arguments, it works the same as for
         standard dictionaries.
@@ -566,7 +546,7 @@ class DeepDict(dict, Generic[_KT, _VT]):
         *,
         deep: bool = False,
         return_address: bool = False,
-    ) -> Generator[_KT, None, None]:
+    ) -> Iterator[_KT]:
         """
         Returns the keys. When called without arguments, it works the same as for
         standard dictionaries.
@@ -592,3 +572,57 @@ class DeepDict(dict, Generic[_KT, _VT]):
         else:
             for k in super().keys():
                 yield k
+
+    def __before_join_parent__(
+        self: _DT, parent: _DT, key: _KT | NoneType = None
+    ) -> NoneType:
+        """Actions to be taken before joining a parent."""
+        ...
+
+    def __after_join_parent__(
+        self: _DT, parent: _DT, key: _KT | NoneType = None
+    ) -> NoneType:
+        """
+        Actions to be taken after joining a parent.
+
+        .. note::
+           If you implement this method, don't forget to call
+           `super().__after_join_parent__()` as well.
+
+        """
+        self._parent = parent
+        self._key = key
+
+    def __before_leave_parent__(self) -> NoneType:
+        """Actions to be taken before leaving a parent."""
+        ...
+
+    def __after_leave_parent__(self) -> NoneType:
+        """
+        Actions to be taken after leaving a parent.
+
+        .. note::
+           If you implement this method, don't forget to call
+           `super().__after_leave_parent__()` as well.
+
+        """
+        self._parent = None
+        self._key = None
+
+    def __leave_parent__(self) -> NoneType:
+        warnings.warn(
+            "The __leave_parent__ method is deprecated. "
+            "Please consult the documentation and use the "
+            "__before_leave_parent__ and __after_leave_parent__ methods instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+    def __join_parent__(self: _DT, parent: _DT, key: _KT | NoneType = None) -> NoneType:
+        warnings.warn(
+            "The __join_parent__ method is deprecated. "
+            "Please consult the documentation and use the "
+            "__before_join_parent__ and __after_join_parent__ methods instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )

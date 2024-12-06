@@ -49,14 +49,11 @@ jobs:
       - python/install-packages:
           pkg-manager: poetry
       - run:
-          name: Add new command
-          command: chmod +x ./export_requirements.sh
-      - run:
           name: Build project
           command: |
             poetry check
             poetry lock
-            ./export_requirements.sh 
+            poetry export -f requirements.txt --output requirements.txt 
             poetry install
             poetry build
       - run:
@@ -76,14 +73,11 @@ jobs:
       - python/install-packages:
           pkg-manager: poetry
       - run:
-          name: Add new command
-          command: chmod +x ./export_requirements.sh
-      - run:
           name: Build project
           command: |
             poetry check
             poetry lock
-            ./export_requirements.sh 
+            poetry export -f requirements.txt --output requirements.txt 
             poetry install
             poetry build
       - run:

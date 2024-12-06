@@ -1,7 +1,7 @@
-.. _API Reference:
+.. _api_reference:
 
 =============
-API Reference
+API reference
 =============
 
 The reference guide contains a detailed description of the functions,
@@ -12,5 +12,5 @@ understanding of the key concepts.
 .. toctree::
     :maxdepth: 6
     
-    /api/api_deepdict
-    /api/api_utils
+    api_deepdict
+    api_utils

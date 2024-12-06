@@ -1,5 +1,6 @@
 import pytest
 from sigmaepsilon.deepdict import DeepDict, Key
+from sigmaepsilon.deepdict.exceptions import DeepDictLockedError
 
 
 def test_missing_key_creates_new_deepdict():
@@ -31,22 +32,22 @@ def test_missing_key_with_key_wrapper():
     assert dd["wrapped_key"] is result
 
 
-def test_missing_key_when_locked_raises_keyerror():
+def test_missing_key_when_locked_raises_DeepDictLockedError():
     dd = DeepDict()
     dd.lock()
     missing_key = "locked_key"
     with pytest.raises(
-        KeyError, match=f"Missing key '{missing_key}' and the object is locked!"
+        DeepDictLockedError, match=f"Missing key '{missing_key}' and the object is locked!"
     ):
         dd.__missing__(missing_key)
 
 
-def test_missing_key_with_sequence_when_locked_raises_keyerror():
+def test_missing_key_with_sequence_when_locked_raises_DeepDictLockedError():
     dd = DeepDict()
     dd.lock()
     missing_key = "missing_key"
     with pytest.raises(
-        KeyError, match=f"Missing key '{missing_key}' and the object is locked!"
+        DeepDictLockedError, match=f"Missing key '{missing_key}' and the object is locked!"
     ):
         dd.__missing__(missing_key)
 
