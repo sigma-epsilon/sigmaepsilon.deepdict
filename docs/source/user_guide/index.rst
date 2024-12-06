@@ -13,7 +13,7 @@ If you don't know where to start, check out the :ref:`getting_started` guide fir
 
 .. toctree::
     :maxdepth: 2
-    :caption: Contents
+    :caption: User Guide
     
     getting_started
     installation
