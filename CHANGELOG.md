@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Additionally, this changelog includes a "Refactored" section for changes that do not modify the behavior of the code.
 
-## [Unreleased]
+## [XXX.YYY.ZZZ] - [Unreleased]
+
+## [3.0.0] - 2024-12-06
+
+### Added
+
+- Added type checks for the magic methods ``__getitem__``, ``__setitem__`` and ``__delitem__``.
+- Added a custom exception type ``DeepDictLockedError`` for when a locked dictionary is about to be modified.
+- Added new special methods `__before_join_parent__`, `__after_join_parent__`, `__before_leave_parent__` and `__after_leave_parent__` to replace the hooks `__leave_parent__` and `__join_parent__`.
 
 ### Changed
 
@@ -27,6 +35,8 @@ Additionally, this changelog includes a "Refactored" section for changes that do
   ```
 
 - Customizing the behaviour upon deleting a DeepDict from its parent and adding a child DeepDict has been changed, see the notes at the 'Deprecated' section.
+
+- Changed the locking behaviour to cover for all scenarios that would modify the layout of a dictionary. The previous implementation only covered creating new keys, but it didn't protect agains deletions.
 
 ### Deprecated
 
