@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from sigmaepsilon.core.testing import SigmaEpsilonTestCase
 from sigmaepsilon.deepdict import DeepDict, Key, Value
+from sigmaepsilon.deepdict.exceptions import DeepDictLockedError
 
 
 class TestBehaviour(SigmaEpsilonTestCase):
@@ -43,7 +44,7 @@ class TestBehaviour(SigmaEpsilonTestCase):
         def foo():
             data["b"] = 1
 
-        self.assertFailsProperly(KeyError, foo)
+        self.assertFailsProperly(DeepDictLockedError, foo)
 
     def test_behaviour_5(self):
         d = {
@@ -171,7 +172,7 @@ class TestBehaviour(SigmaEpsilonTestCase):
         p1 = Point(1, 2)
         with self.assertRaises(TypeError):
             p1 in d
-            
+
         d = DeepDict()
         dd = DeepDict()
         ddd = DeepDict()
