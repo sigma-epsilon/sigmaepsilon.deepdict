@@ -9,7 +9,6 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/sigmaepsilon.deepdict)](https://pypi.org/project/sigmaepsilon.deepdict)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/sigmaepsilon.deepdict)](https://www.python.org)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Requirements Status](https://dependency-dash.repo-helper.uk/github/sigma-epsilon/sigmaepsilon.deepdict/badge.svg)](https://dependency-dash.repo-helper.uk/github/sigma-epsilon/sigmaepsilon.deepdict)
 [![Static Badge](https://img.shields.io/badge/versioning-semver-orange)](https://semver.org/)
 
 `sigmaepsilon.deepdict` is a lightweight Python library designed to handle nested dictionaries more easily, especially in cases where dictionaries are created dynamically. Its key feature is the `DeepDict` class, which extends the regular dict to support nested layouts. It allows easy manipulation of deeply nested structures, array-like indexing, and automatic creation of deep dictionary levels without manually defining all parent keys. It is particularly useful in scenarios involving hierarchical data. The library also supports printing dictionaries as trees.
