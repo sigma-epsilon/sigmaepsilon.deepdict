@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "sigmaepsilon.deepdict"
-version = "3.0.0"
+version = "3.0.1"
 description = "Common developer utilities for Python projects."
 classifiers=[
         "Development Status :: 5 - Production/Stable",
@@ -28,6 +28,15 @@ packages = [{ include = "sigmaepsilon", from = "src" }]
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
 sigmaepsilon-core = "^1.2.1"
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.docs]
+optional = true
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^7.0.0"
