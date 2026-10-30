@@ -1,64 +1,67 @@
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry]
+[project]
 name = "sigmaepsilon.deepdict"
 version = "3.0.1"
 description = "Common developer utilities for Python projects."
-classifiers=[
-        "Development Status :: 5 - Production/Stable",
-        "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
-        "Programming Language :: Python :: 3 :: Only",
-        "Operating System :: OS Independent",
-]
 readme = "README.md"
-authors = ["Bence Balogh <bencebalogh@sigmaepsilon.com>"]
-maintainers = ["Bence Balogh <bencebalogh@sigmaepsilon.com>"]
+requires-python = ">=3.10,<4.0"
 license = "MIT"
+authors = [{ name = "Bence Balogh", email = "bencebalogh@sigmaepsilon.com" }]
+maintainers = [{ name = "Bence Balogh", email = "bencebalogh@sigmaepsilon.com" }]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+    "Operating System :: OS Independent",
+]
 keywords = ["data structures", "dictionary", "Python", "tree"]
-homepage = "https://github.com/sigma-epsilon/sigmaepsilon.deepdict"
-repository = "https://github.com/sigma-epsilon/sigmaepsilon.deepdict"
-documentation = "https://sigmaepsilondeepdict.readthedocs.io/en/latest/?badge=latest"
-packages = [{ include = "sigmaepsilon", from = "src" }]
+dependencies = [
+    "sigmaepsilon-core>=1.2.1,<2",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.10,<4.0"
-sigmaepsilon-core = "^1.2.1"
+[project.urls]
+Homepage = "https://github.com/sigma-epsilon/sigmaepsilon.deepdict"
+Repository = "https://github.com/sigma-epsilon/sigmaepsilon.deepdict"
+Documentation = "https://sigmaepsilondeepdict.readthedocs.io/en/latest/?badge=latest"
 
-[tool.poetry.group.dev]
-optional = true
+[tool.hatch.build.targets.wheel]
+packages = ["src/sigmaepsilon"]
 
-[tool.poetry.group.test]
-optional = true
+[tool.hatch.build.targets.sdist]
+include = ["src/sigmaepsilon", "README.md", "LICENSE"]
 
-[tool.poetry.group.docs]
-optional = true
+[tool.uv]
+# Poetry groups were opt-in; keep it that way (`uv sync --group <name>`).
+default-groups = []
 
-[tool.poetry.group.dev.dependencies]
-flake8 = "^7.0.0"
-black = "^24.2.0"
-ipykernel = "^6.29.2"
-asciitree = "^0.3.3"
-tornado = "^6.4"
-
-[tool.poetry.group.test.dependencies]
-coverage = "^7.4.1"
-pytest = "^8.0.1"
-pytest-cov = "^4.1.0"
-asciitree = "^0.3.3"
-tornado = ">=6.3.3"
-
-[tool.poetry.group.docs.dependencies]
-sphinx = "^7.2.6"
-ipython = "^8.21.0"
-myst-parser = "^2.0.0"
-nbsphinx = "^0.9.3"
-sphinx-copybutton = "^0.5.2"
-sphinx-design = "^0.5.0"
-sphinx-inline-tabs = "^2023.4.21"
-pydata-sphinx-theme = "^0.15.4"
-tornado = ">=6.3.3"
+[dependency-groups]
+dev = [
+    "flake8>=7.0.0,<8",
+    "black>=24.2.0,<25",
+    "ipykernel>=6.29.2,<7",
+    "asciitree>=0.3.3,<0.4",
+    "tornado>=6.4,<7",
+]
+test = [
+    "coverage>=7.4.1,<8",
+    "pytest>=8.0.1,<9",
+    "pytest-cov>=4.1.0,<5",
+    "asciitree>=0.3.3,<0.4",
+    "tornado>=6.3.3",
+]
+docs = [
+    "sphinx>=7.2.6,<8",
+    "ipython>=8.21.0,<9",
+    "myst-parser>=2.0.0,<3",
+    "nbsphinx>=0.9.3,<0.10",
+    "sphinx-copybutton>=0.5.2,<0.6",
+    "sphinx-design>=0.5.0,<0.6",
+    "sphinx-inline-tabs>=2023.4.21,<2024",
+    "pydata-sphinx-theme>=0.15.4,<0.16",
+    "tornado>=6.3.3",
+]
