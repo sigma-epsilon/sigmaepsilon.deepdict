@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   python: circleci/python@3.0.0
-  codecov: codecov/codecov@5.0.3
+  codecov: codecov/codecov@6.1.0
 
 executors:
   my-executor:
@@ -15,25 +15,18 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Refresh packages
-          command: sudo apt-get update
-      - run:
-          name: Create lock file
-          command: poetry lock --no-update
-      - python/install-packages:
-          pkg-manager: poetry
+          name: Install uv
+          command: pip install uv
       - run:
           name: Install project
           command: |
-            poetry install --with test
+            uv sync --locked --group test
       - run:
           name: Run tests and generate coverage report
-          command: |
-            chmod +x ./run_tests_with_coverage.sh
-            ./run_tests_with_coverage.sh 
+          command: uv run pytest --cov-report=xml --cov-config=.coveragerc --cov=sigmaepsilon.deepdict
       - store_artifacts:
           name: Store coverage report as artifact
-          path: htmlcov/
+          path: coverage.xml
       - codecov/upload
       - store_test_results:
           name: Store test results
@@ -44,47 +37,32 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Create lock file
-          command: poetry lock --no-update
-      - python/install-packages:
-          pkg-manager: poetry
+          name: Install uv
+          command: pip install uv
       - run:
           name: Build project
           command: |
-            poetry check
-            poetry lock
-            poetry export -f requirements.txt --output requirements.txt 
-            poetry install
-            poetry build
+            uv build
       - run:
           name: Deploy to TestPyPI
           command: |
-            poetry config repositories.testpypi https://test.pypi.org/legacy/
-            poetry config pypi-token.testpypi $TEST_PYPI_TOKEN
-            poetry publish -r testpypi --skip-existing
+            uv publish --publish-url https://test.pypi.org/legacy/ --check-url https://test.pypi.org/simple/ --token $TEST_PYPI_TOKEN
 
   deploy_to_pypi:
     executor: my-executor
     steps:
       - checkout
       - run:
-          name: Create lock file
-          command: poetry lock --no-update
-      - python/install-packages:
-          pkg-manager: poetry
+          name: Install uv
+          command: pip install uv
       - run:
           name: Build project
           command: |
-            poetry check
-            poetry lock
-            poetry export -f requirements.txt --output requirements.txt 
-            poetry install
-            poetry build
+            uv build
       - run:
           name: Deploy to PyPI
           command: |
-            poetry config pypi-token.pypi $PYPI_TOKEN
-            poetry publish --skip-existing
+            uv publish --check-url https://pypi.org/simple/ --token $PYPI_TOKEN
 
 workflows:
   test_and_deploy:
