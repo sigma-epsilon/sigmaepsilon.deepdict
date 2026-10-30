@@ -2118,7 +2118,7 @@ docs = [
 test = [
     { name = "asciitree", specifier = ">=0.3.3,<0.4" },
     { name = "coverage", specifier = ">=7.4.1,<8" },
-    { name = "pytest", specifier = ">=8.0.1,<9" },
+    { name = "pytest", specifier = ">=8.1.0,<9" },
     { name = "pytest-cov", specifier = ">=4.1.0,<5" },
     { name = "tornado", specifier = ">=6.3.3" },
 ]
