@@ -1,6 +1,6 @@
 version = 1
 revision = 3
-requires-python = ">=3.10, <4.0"
+requires-python = ">=3.10"
 resolution-markers = [
     "python_full_version >= '3.11.5'",
     "python_full_version >= '3.11' and python_full_version < '3.11.5'",
@@ -2055,7 +2055,7 @@ wheels = [
 
 [[package]]
 name = "sigmaepsilon-deepdict"
-version = "3.0.1"
+version = "3.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "sigmaepsilon-core" },
@@ -2094,7 +2094,7 @@ test = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "sigmaepsilon-core", specifier = ">=1.2.1,<2" }]
+requires-dist = [{ name = "sigmaepsilon-core", specifier = ">=1.2.0" }]
 
 [package.metadata.requires-dev]
 dev = [
