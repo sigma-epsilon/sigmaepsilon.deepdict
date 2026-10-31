@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   python: circleci/python@3.0.0
-  codecov: codecov/codecov@5.0.3
+  codecov: codecov/codecov@6.1.0
 
 executors:
   my-executor:
@@ -12,29 +12,46 @@ executors:
 jobs:
   run_tests:
     executor: my-executor
+    parameters:
+      python:
+        type: string
+      resolution:
+        description: uv resolution strategy; lowest-direct checks the minimum versions in pyproject.toml.
+        type: enum
+        enum: ["highest", "lowest-direct"]
+        default: "highest"
     steps:
       - checkout
       - run:
-          name: Refresh packages
-          command: sudo apt-get update
-      - run:
-          name: Create lock file
-          command: poetry lock --no-update
-      - python/install-packages:
-          pkg-manager: poetry
-      - run:
-          name: Install project
-          command: |
-            poetry install --with test
+          name: Install uv
+          command: pip install uv
+      - when:
+          condition:
+            equal: ["highest", << parameters.resolution >>]
+          steps:
+            - run:
+                name: Install project
+                command: uv sync --locked --group test --python << parameters.python >>
+      - when:
+          condition:
+            equal: ["lowest-direct", << parameters.resolution >>]
+          steps:
+            - run:
+                name: Install project with the lowest direct dependencies
+                command: uv sync --resolution lowest-direct --group test --python << parameters.python >>
       - run:
           name: Run tests and generate coverage report
-          command: |
-            chmod +x ./run_tests_with_coverage.sh
-            ./run_tests_with_coverage.sh 
-      - store_artifacts:
-          name: Store coverage report as artifact
-          path: htmlcov/
-      - codecov/upload
+          command: uv run --no-sync pytest --cov-report=xml --cov-config=.coveragerc --cov=sigmaepsilon.deepdict
+      - when:
+          condition:
+            and:
+              - equal: ["3.12", << parameters.python >>]
+              - equal: ["highest", << parameters.resolution >>]
+          steps:
+            - store_artifacts:
+                name: Store coverage report as artifact
+                path: coverage.xml
+            - codecov/upload
       - store_test_results:
           name: Store test results
           path: test-results
@@ -44,58 +61,52 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Create lock file
-          command: poetry lock --no-update
-      - python/install-packages:
-          pkg-manager: poetry
+          name: Install uv
+          command: pip install uv
       - run:
           name: Build project
           command: |
-            poetry check
-            poetry lock
-            poetry export -f requirements.txt --output requirements.txt 
-            poetry install
-            poetry build
+            uv build
       - run:
           name: Deploy to TestPyPI
           command: |
-            poetry config repositories.testpypi https://test.pypi.org/legacy/
-            poetry config pypi-token.testpypi $TEST_PYPI_TOKEN
-            poetry publish -r testpypi --skip-existing
+            uv publish --publish-url https://test.pypi.org/legacy/ --check-url https://test.pypi.org/simple/ --token $TEST_PYPI_TOKEN
 
   deploy_to_pypi:
     executor: my-executor
     steps:
       - checkout
       - run:
-          name: Create lock file
-          command: poetry lock --no-update
-      - python/install-packages:
-          pkg-manager: poetry
+          name: Install uv
+          command: pip install uv
       - run:
           name: Build project
           command: |
-            poetry check
-            poetry lock
-            poetry export -f requirements.txt --output requirements.txt 
-            poetry install
-            poetry build
+            uv build
       - run:
           name: Deploy to PyPI
           command: |
-            poetry config pypi-token.pypi $PYPI_TOKEN
-            poetry publish --skip-existing
+            uv publish --check-url https://pypi.org/simple/ --token $PYPI_TOKEN
 
 workflows:
   test_and_deploy:
     jobs:
-      - run_tests
+      - run_tests:
+          matrix:
+            parameters:
+              python: ["3.10", "3.12", "3.13"]
+
+      - run_tests:
+          name: run_tests_lowest
+          python: "3.10"
+          resolution: "lowest-direct"
 
       - deploy_to_test_pypi:
           context:
             - TestPyPI deploy
           requires:
             - run_tests
+            - run_tests_lowest
           filters:
             branches:
               only:
@@ -106,6 +117,7 @@ workflows:
             - PyPI deploy
           requires:
             - run_tests
+            - run_tests_lowest
           filters:
             branches:
               only:
