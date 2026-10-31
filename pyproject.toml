@@ -4,10 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sigmaepsilon.deepdict"
-version = "3.0.1"
+version = "3.1.0"
 description = "Common developer utilities for Python projects."
 readme = "README.md"
-requires-python = ">=3.10,<4.0"
+requires-python = ">=3.10"
 license = "MIT"
 authors = [{ name = "Bence Balogh", email = "bencebalogh@sigmaepsilon.com" }]
 maintainers = [{ name = "Bence Balogh", email = "bencebalogh@sigmaepsilon.com" }]
@@ -16,12 +16,13 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3 :: Only",
     "Operating System :: OS Independent",
 ]
 keywords = ["data structures", "dictionary", "Python", "tree"]
 dependencies = [
-    "sigmaepsilon-core>=1.2.1,<2",
+    "sigmaepsilon-core>=1.2.0",
 ]
 
 [project.urls]
